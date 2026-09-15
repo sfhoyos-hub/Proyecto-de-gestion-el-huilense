@@ -57,6 +57,8 @@ async function initDB() {
             estado TEXT DEFAULT 'activo'
         )
     `);
+    console.log('Base de datos SQLite conectada y tablas verificadas.');
+    return db;
 }
 
 // Devuelve la conexión ya abierta, para que las rutas puedan hacer consultas.
