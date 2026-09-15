@@ -45,8 +45,18 @@ async function initDB() {
     // dos ventas registradas el mismo domingo (así se cumple la regla
     // de "editar si ya existe" en vez de duplicar).
 
-    console.log('Base de datos SQLite conectada y tablas verificadas.');
-    return db;
+        // ---- Tabla: users (RF-01 - Login) ----
+    // Guarda los usuarios que pueden ingresar al sistema
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            rol TEXT NOT NULL,
+            estado TEXT DEFAULT 'activo'
+        )
+    `);
 }
 
 // Devuelve la conexión ya abierta, para que las rutas puedan hacer consultas.

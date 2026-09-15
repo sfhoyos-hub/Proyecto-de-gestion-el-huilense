@@ -10,6 +10,7 @@ app.use(cors());
 
 app.use('/meseros', require('./modulos/meseros/meseros.routes'));
 app.use('/ventas', require('./modulos/ventas/ventas.routes'));
+app.use('/login', require('./modulos/login/login.routes'));
 
 app.get('/', (req, res) => {
     res.send('API de El Huilense funcionando.');
