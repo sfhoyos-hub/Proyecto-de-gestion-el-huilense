@@ -10,6 +10,8 @@ app.use(cors());
 
 app.use('/meseros', require('./modulos/meseros/meseros.routes'));
 app.use('/ventas', require('./modulos/ventas/ventas.routes'));
+app.use('/ranking', require('./modulos/ranking/ranking.routes'));
+app.use('/bonificaciones', require('./modulos/bonificaciones/bonificaciones.routes'));
 
 app.get('/', (req, res) => {
     res.send('API de El Huilense funcionando.');
