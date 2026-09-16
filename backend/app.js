@@ -4,6 +4,7 @@ const { initDB } = require('./database/initDB');
 
 // Importar rutas
 const bonificacionesRoutes = require('./modulos/bonificaciones/bonificaciones.routes');
+const domingosRoutes = require('./modulos/domingos/domingos.routes');
 const meserosRoutes = require('./modulos/meseros/meseros.routes');
 const rankingRoutes = require('./modulos/ranking/ranking.routes');
 const ventasRoutes = require('./modulos/ventas/ventas.routes');
@@ -18,6 +19,7 @@ app.use(cors());
 
 // Rutas
 app.use('/bonificaciones', bonificacionesRoutes);
+app.use('/domingos', domingosRoutes);
 app.use('/meseros', meserosRoutes);
 app.use('/ranking', rankingRoutes);
 app.use('/ventas', ventasRoutes);
