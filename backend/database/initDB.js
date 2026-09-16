@@ -1,60 +1,218 @@
-// Conexión a la base de datos SQLite del proyecto "El Huilense"
 const path = require('path');
 const sqlite3 = require('sqlite3');
 const { open } = require('sqlite');
-// Variable que guardará la conexión activa a la base de datos
+
 let db;
 
-// Conecta a SQLite y crea las tablas si no existen todavía.
-// Se llama una sola vez, al arrancar el servidor (desde server.js).
 async function initDB() {
     db = await open({
-        filename: path.join(__dirname, '..', 'database.sqlite'), // el archivo vive en la raíz de backend/
+        filename: path.join(__dirname, '..', 'database.sqlite'),
         driver: sqlite3.Database
     });
 
-    // Habilita las llaves foráneas (SQLite las trae desactivadas por defecto)
     await db.exec('PRAGMA foreign_keys = ON');
 
-    // ---- Tabla: meseros ----
-    // Guarda la información de cada mesero del restaurante
+    // =========================
+    // USUARIOS
+    // =========================
     await db.exec(`
-        CREATE TABLE IF NOT EXISTS meseros (
+        CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            identificacion TEXT NOT NULL UNIQUE,
-            nombre TEXT NOT NULL,
-            apellido TEXT NOT NULL,
-            fecha_ingreso TEXT NOT NULL,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            rol TEXT NOT NULL CHECK (rol IN ('ADMIN', 'MESERO')),
             estado TEXT NOT NULL DEFAULT 'activo'
         )
     `);
 
-    // ---- Tabla: ventas (HU 02.1 - Registro de Ventas) ----
-    // Guarda el total vendido por cada mesero, cada domingo
+    // =========================
+    // MESEROS
+    // =========================
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS meseros (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER UNIQUE,
+            identificacion TEXT NOT NULL UNIQUE,
+            nombre TEXT NOT NULL,
+            apellido TEXT NOT NULL,
+            fecha_ingreso TEXT NOT NULL,
+            estado TEXT NOT NULL DEFAULT 'activo',
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    `);
+
+    // =========================
+    // TEMPORADAS
+    // =========================
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS temporadas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL UNIQUE
+        )
+    `);
+
+    // =========================
+    // DOMINGOS
+    // =========================
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS domingos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fecha TEXT NOT NULL UNIQUE,
+            temporada_id INTEGER,
+            meseros_requeridos INTEGER NOT NULL DEFAULT 0,
+            cerrado INTEGER NOT NULL DEFAULT 0,
+            cerrado_por INTEGER,
+            fecha_cierre TEXT,
+            FOREIGN KEY (temporada_id) REFERENCES temporadas(id),
+            FOREIGN KEY (cerrado_por) REFERENCES users(id)
+        )
+    `);
+
+    // =========================
+    // CONVOCATORIAS
+    // =========================
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS convocatorias (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            domingo_id INTEGER NOT NULL,
+            mesero_id INTEGER NOT NULL,
+            estado TEXT NOT NULL DEFAULT 'convocado'
+                CHECK (estado IN ('convocado', 'descanso')),
+            FOREIGN KEY (domingo_id) REFERENCES domingos(id) ON DELETE CASCADE,
+            FOREIGN KEY (mesero_id) REFERENCES meseros(id) ON DELETE CASCADE,
+            UNIQUE (domingo_id, mesero_id)
+        )
+    `);
+
+    // =========================
+    // VENTAS
+    // =========================
     await db.exec(`
         CREATE TABLE IF NOT EXISTS ventas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             mesero_id INTEGER NOT NULL,
-            fecha TEXT NOT NULL,
+            domingo_id INTEGER NOT NULL,
             total_vendido REAL NOT NULL,
             FOREIGN KEY (mesero_id) REFERENCES meseros(id) ON DELETE CASCADE,
-            UNIQUE (mesero_id, fecha)
+            FOREIGN KEY (domingo_id) REFERENCES domingos(id) ON DELETE CASCADE,
+            UNIQUE (mesero_id, domingo_id)
         )
     `);
-    // El UNIQUE (mesero_id, fecha) es clave: evita que un mesero tenga
-    // dos ventas registradas el mismo domingo (así se cumple la regla
-    // de "editar si ya existe" en vez de duplicar).
+
+    // =========================
+    // RANKINGS
+    // =========================
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS rankings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            domingo_id INTEGER NOT NULL,
+            mesero_id INTEGER NOT NULL,
+            posicion INTEGER NOT NULL,
+            total_vendido REAL NOT NULL,
+            top6 INTEGER NOT NULL DEFAULT 0,
+            FOREIGN KEY (domingo_id) REFERENCES domingos(id) ON DELETE CASCADE,
+            FOREIGN KEY (mesero_id) REFERENCES meseros(id) ON DELETE CASCADE,
+            UNIQUE (domingo_id, mesero_id)
+        )
+    `);
+
+    // =========================
+    // RACHAS
+    // =========================
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS rachas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            mesero_id INTEGER NOT NULL UNIQUE,
+            racha_actual INTEGER NOT NULL DEFAULT 0,
+            activa INTEGER NOT NULL DEFAULT 0,
+            fecha_ultima_actualizacion TEXT,
+            FOREIGN KEY (mesero_id) REFERENCES meseros(id) ON DELETE CASCADE
+        )
+    `);
+
+    // =========================
+    // BONIFICACIONES
+    // =========================
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS bonificaciones (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ranking_id INTEGER NOT NULL UNIQUE,
+            monto REAL NOT NULL,
+            fecha_entrega TEXT NOT NULL,
+            observaciones TEXT,
+            FOREIGN KEY (ranking_id) REFERENCES rankings(id) ON DELETE CASCADE
+        )
+    `);
+
+    // =========================
+    // CUENTAS NEQUI
+    // =========================
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS cuentas_nequi (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            mesero_id INTEGER NOT NULL UNIQUE,
+            numero_celular TEXT NOT NULL,
+            FOREIGN KEY (mesero_id) REFERENCES meseros(id) ON DELETE CASCADE
+        )
+    `);
+
+    // =========================
+    // SOLICITUDES DE PAGO
+    // =========================
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS solicitudes_pago (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            bonificacion_id INTEGER NOT NULL UNIQUE,
+            estado TEXT NOT NULL DEFAULT 'pendiente'
+                CHECK (estado IN ('pendiente', 'confirmado', 'cancelado', 'error')),
+            fecha_solicitud TEXT NOT NULL,
+            fecha_confirmacion TEXT,
+            mensaje_error TEXT,
+            FOREIGN KEY (bonificacion_id)
+                REFERENCES bonificaciones(id) ON DELETE CASCADE
+        )
+    `);
+
+    // =========================
+    // NOTIFICACIONES
+    // =========================
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS notificaciones (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            mesero_id INTEGER NOT NULL,
+            tipo TEXT NOT NULL
+                CHECK (tipo IN ('turno', 'ranking', 'bonificacion', 'pago')),
+            mensaje TEXT NOT NULL,
+            fecha TEXT NOT NULL,
+            leida INTEGER NOT NULL DEFAULT 0,
+            FOREIGN KEY (mesero_id) REFERENCES meseros(id) ON DELETE CASCADE
+        )
+    `);
+
+    // =========================
+    // SUGERENCIAS
+    // =========================
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS sugerencias (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            contenido TEXT NOT NULL,
+            fecha TEXT NOT NULL
+        )
+    `);
 
     console.log('Base de datos SQLite conectada y tablas verificadas.');
+
     return db;
 }
 
-// Devuelve la conexión ya abierta, para que las rutas puedan hacer consultas.
-// Lanza un error si alguien intenta usarla antes de llamar a initDB().
 function getDB() {
     if (!db) {
-        throw new Error('La base de datos aún no ha sido inicializada. Llama a initDB() primero.');
+        throw new Error(
+            'La base de datos aún no ha sido inicializada. Llama a initDB() primero.'
+        );
     }
+
     return db;
 }
 
