@@ -1,35 +1,22 @@
 const express = require('express');
 const cors = require('cors');
 const { initDB } = require('./database/initDB');
+const cargarRutas = require('./modulos');
 
 const app = express();
-
 const PORT = 3000;
 
-// Middlewares
 app.use(express.json());
 app.use(cors());
 
-// =========================
-// IMPORTACIÓN DE RUTAS
-// =========================
-const loginRoutes = require('./modulos/login/login.routes');
-const rachaRoutes = require('./modulos/racha/racha.routes');
+cargarRutas(app);
 
-// =========================
-// USO DE RUTAS
-// =========================
-app.use('/login', loginRoutes);
-app.use('/racha', rachaRoutes);
-
-// Ruta principal de prueba
 app.get('/', (req, res) => {
     res.json({
         mensaje: 'API de El Huilense funcionando correctamente'
     });
 });
 
-// Inicializar base de datos y levantar servidor
 initDB()
     .then(() => {
         app.listen(PORT, () => {
