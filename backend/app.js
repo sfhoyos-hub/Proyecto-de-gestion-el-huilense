@@ -10,7 +10,19 @@ const PORT = 3000;
 app.use(express.json());
 app.use(cors());
 
-// Ruta principal
+// =========================
+// IMPORTACIÓN DE RUTAS
+// =========================
+const loginRoutes = require('./modulos/login/login.routes');
+const rachaRoutes = require('./modulos/racha/racha.routes');
+
+// =========================
+// USO DE RUTAS
+// =========================
+app.use('/login', loginRoutes);
+app.use('/racha', rachaRoutes);
+
+// Ruta principal de prueba
 app.get('/', (req, res) => {
     res.json({
         mensaje: 'API de El Huilense funcionando correctamente'

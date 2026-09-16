@@ -1,60 +1,41 @@
 const express = require('express');
-const { getDB } = require('../../database/initDB');
-
 const router = express.Router();
 
-// POST /login
-// Permite iniciar sesión con correo y contraseña
+// Ruta corregida apuntando a la carpeta database
+const { getDB } = require('../../database/initDB'); 
+
 router.post('/', async (req, res) => {
     const { email, password } = req.body;
 
-    // Validar que se hayan enviado los campos
     if (!email || !password) {
-        return res.status(400).json({
-            mensaje: 'Todos los campos son requeridos'
+        return res.status(400).json({ 
+            mensaje: 'Todos los campos son requeridos: email y password' 
         });
     }
 
     try {
         const db = getDB();
-
-        // Buscar el usuario por su correo
-        const user = await db.get(
-            'SELECT * FROM users WHERE email = ?',
-            [email.trim()]
+        const usuario = await db.get(
+            'SELECT id, name, email, rol, estado FROM users WHERE email = ? AND password = ?',
+            [email, password]
         );
 
-        // Verificar que exista y que la contraseña coincida
-        if (!user || user.password !== password) {
-            return res.status(401).json({
-                mensaje: 'Usuario o contraseña incorrectos'
-            });
+        if (!usuario) {
+            return res.status(401).json({ mensaje: 'Correo o contraseña incorrectos' });
         }
 
-        // Un mesero inactivo no puede iniciar sesión
-        if (user.rol === 'MESERO' && user.estado === 'inactivo') {
-            return res.status(403).json({
-                mensaje: 'La cuenta no está activa'
-            });
+        if (usuario.estado !== 'activo') {
+            return res.status(403).json({ mensaje: 'El usuario se encuentra inactivo' });
         }
 
-        // Login correcto
-        res.json({
+        res.status(200).json({
             mensaje: 'Login exitoso',
-            usuario: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                rol: user.rol,
-                estado: user.estado
-            }
+            usuario: usuario
         });
 
     } catch (error) {
-        res.status(500).json({
-            mensaje: 'Error al procesar el login',
-            error: error.message
-        });
+        console.error('Error en el login:', error);
+        res.status(500).json({ mensaje: 'Error interno del servidor', error: error.message });
     }
 });
 
