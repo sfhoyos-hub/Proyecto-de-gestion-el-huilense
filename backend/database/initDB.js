@@ -58,7 +58,13 @@ async function initDB() {
         )
     `);
     console.log('Base de datos SQLite conectada y tablas verificadas.');
-    return db;
+   
+    // Crear un usuario de prueba para el login
+   await db.run(`
+     INSERT OR IGNORE INTO users (id, name, email, password, rol, estado) 
+     VALUES (1, 'David', 'david@huilense.com', '12345', 'admin', 'activo')
+   `);
+   return db;
 }
 
 // Devuelve la conexión ya abierta, para que las rutas puedan hacer consultas.
