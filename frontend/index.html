@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Acceso de administradores al sistema de gestión de El Huilense.">
+  <meta name="theme-color" content="#0f2e22">
+  <title>Iniciar sesión | El Huilense</title>
+
+  <!-- Bootstrap 5 y Bootstrap Icons (CDN con versión fija e integridad SRI) -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+"
+        crossorigin="anonymous">
+
+  <!-- Estilos propios: van después de Bootstrap para poder ajustarlo -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+
+<body>
+  <a class="salto" href="#contenido">Ir al formulario de acceso</a>
+
+  <div class="login">
+
+    <!-- Panel de marca -->
+    <header class="marca">
+      <h1 class="marca__nombre">El Huilense</h1>
+      <p class="marca__lema">Sistema de gestión del restaurante</p>
+
+      <section class="marca__funciones" aria-label="Funciones del sistema">
+        <p>Desde este sistema se administran:</p>
+        <ul>
+          <li><i class="bi bi-calendar-event" aria-hidden="true"></i>Los domingos de servicio</li>
+          <li><i class="bi bi-receipt" aria-hidden="true"></i>Las ventas de cada mesero</li>
+          <li><i class="bi bi-trophy" aria-hidden="true"></i>El ranking y el cierre de cortes</li>
+        </ul>
+      </section>
+    </header>
+
+    <!-- Contenido principal: formulario de acceso -->
+    <main class="acceso" id="contenido" tabindex="-1">
+      <section class="tarjeta" aria-labelledby="titulo-login">
+        <h2 id="titulo-login">Iniciar sesión</h2>
+        <p>Bienvenido. Ingresa con tu cuenta de administrador.</p>
+
+        <!-- Región en vivo: los mensajes se insertan aquí desde JavaScript -->
+        <div id="zona-mensajes" aria-live="assertive" aria-atomic="true"></div>
+
+        <form id="form-login" novalidate>
+          <div class="campo">
+            <label class="campo__etiqueta form-label" for="email">Correo electrónico</label>
+            <div class="campo__control">
+              <input class="campo__input form-control" id="email" name="email"
+                     type="email" autocomplete="username" inputmode="email"
+                     autocapitalize="none" spellcheck="false" maxlength="254"
+                     placeholder="correo@ejemplo.com" required
+                     aria-describedby="email-error">
+              <i class="bi bi-envelope campo__icono" aria-hidden="true"></i>
+            </div>
+            <p class="campo__error" id="email-error"></p>
+          </div>
+
+          <div class="campo">
+            <label class="campo__etiqueta form-label" for="password">Contraseña</label>
+            <div class="campo__control">
+              <input class="campo__input campo__input--ojo form-control" id="password"
+                     name="password" type="password" autocomplete="current-password"
+                     placeholder="Tu contraseña" required
+                     aria-describedby="password-error">
+              <i class="bi bi-lock campo__icono" aria-hidden="true"></i>
+              <button class="campo__ojo" id="btn-ojo" type="button"
+                      aria-controls="password" aria-pressed="false"
+                      aria-label="Mostrar contraseña">
+                <i class="bi bi-eye" aria-hidden="true"></i>
+              </button>
+            </div>
+            <p class="campo__error" id="password-error"></p>
+          </div>
+
+          <button class="boton btn btn-primary" id="btn-entrar" type="submit">
+            <span class="boton__spinner spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span class="boton__texto">Iniciar sesión</span>
+          </button>
+          <p class="visually-hidden" id="estado-carga" role="status"></p>
+        </form>
+      </section>
+    </main>
+
+    <!-- Pie discreto -->
+    <footer class="pie">
+      <p>El Huilense. Proyecto universitario de gestión de restaurante.</p>
+    </footer>
+  </div>
+
+  <!-- Ayuda flotante (position: fixed) -->
+  <div class="ayuda">
+    <button class="ayuda__boton" id="btn-ayuda" type="button"
+            aria-expanded="false" aria-controls="panel-ayuda">
+      <i class="bi bi-question-circle" aria-hidden="true"></i>
+      <span class="ayuda__texto">Ayuda</span>
+    </button>
+
+    <aside class="ayuda__panel" id="panel-ayuda" aria-labelledby="titulo-ayuda">
+      <h2 id="titulo-ayuda">¿Problemas para entrar?</h2>
+      <button class="ayuda__cerrar" id="btn-ayuda-cerrar" type="button" aria-label="Cerrar ayuda">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+      <ul>
+        <li>Usa el correo con el que se creó tu cuenta de administrador.</li>
+        <li>Las cuentas de mesero no pueden entrar a este panel.</li>
+        <li>El sistema no recupera contraseñas de forma automática: consulta a la persona responsable.</li>
+        <li>Si ves un error de conexión, comprueba que el servidor esté en ejecución.</li>
+      </ul>
+    </aside>
+  </div>
+
+  <!-- Scripts propios (clásicos, sin módulos, para que funcionen también sin servidor) -->
+  <script src="js/api.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>
