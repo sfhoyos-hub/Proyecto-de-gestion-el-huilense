@@ -1,41 +1,33 @@
-// Rutas de domingos - RF-03 / RF-09 / RF-10
-// El admin registra cada domingo (fecha, temporada, meseros requeridos).
-//
-// POST /domingos       -> registra un nuevo domingo
-// GET /domingos        -> lista todos los domingos
-// GET /domingos/:id    -> consulta un domingo puntual
-
 const express = require('express');
 const router = express.Router();
 const { getDB } = require('../../database/initDB');
+
+// Importar la lógica de negocio de las rachas
+const { actualizarRachasAutomatica } = require('../racha/racha.service');
 
 // Valida formato de fecha YYYY-MM-DD
 function esFechaValida(fecha) {
     return typeof fecha === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(fecha);
 }
 
-// POST /domingos
-// Registra un nuevo domingo
+// POST /domingos - Registra un nuevo domingo
 router.post('/', async (req, res) => {
     try {
         const db = getDB();
         const { fecha, temporada_id, meseros_requeridos } = req.body;
 
-        // Campos requeridos
         if (!fecha || meseros_requeridos === undefined) {
             return res.status(400).json({
                 mensaje: 'Todos los campos son requeridos: fecha, meseros_requeridos.'
             });
         }
 
-        // Formato de fecha
         if (!esFechaValida(fecha)) {
             return res.status(400).json({
                 mensaje: 'La fecha debe tener el formato YYYY-MM-DD.'
             });
         }
 
-        // meseros_requeridos debe ser un entero positivo
         const cantidad = Number(meseros_requeridos);
 
         if (!Number.isInteger(cantidad) || cantidad <= 0) {
@@ -44,7 +36,6 @@ router.post('/', async (req, res) => {
             });
         }
 
-        // Si mandan temporada_id, debe existir
         if (temporada_id !== undefined && temporada_id !== null) {
             const temporada = await db.get(
                 'SELECT id FROM temporadas WHERE id = ?',
@@ -58,7 +49,6 @@ router.post('/', async (req, res) => {
             }
         }
 
-        // No debe existir ya un domingo con esa fecha
         const domingoExistente = await db.get(
             'SELECT id FROM domingos WHERE fecha = ?',
             [fecha]
@@ -70,7 +60,6 @@ router.post('/', async (req, res) => {
             });
         }
 
-        // Insertar nuevo domingo
         const resultado = await db.run(
             `INSERT INTO domingos (fecha, temporada_id, meseros_requeridos)
              VALUES (?, ?, ?)`,
@@ -89,15 +78,13 @@ router.post('/', async (req, res) => {
 
     } catch (error) {
         console.error('Error en POST /domingos:', error);
-
         return res.status(500).json({
             mensaje: 'Error interno al registrar el domingo.'
         });
     }
 });
 
-// GET /domingos
-// Lista todos los domingos
+// GET /domingos - Lista todos los domingos
 router.get('/', async (req, res) => {
     try {
         const db = getDB();
@@ -119,15 +106,13 @@ router.get('/', async (req, res) => {
 
     } catch (error) {
         console.error('Error en GET /domingos:', error);
-
         return res.status(500).json({
             mensaje: 'Error interno al consultar los domingos.'
         });
     }
 });
 
-// GET /domingos/:id
-// Consulta un domingo puntual
+// GET /domingos/:id - Consulta un domingo puntual
 router.get('/:id', async (req, res) => {
     try {
         const db = getDB();
@@ -148,10 +133,85 @@ router.get('/:id', async (req, res) => {
 
     } catch (error) {
         console.error('Error en GET /domingos/:id:', error);
-
         return res.status(500).json({
             mensaje: 'Error interno al consultar el domingo.'
         });
+    }
+});
+
+// ==========================================================
+// NUEVA RUTA: POST /domingos/:id/cerrar-corte (RF-03, RF-06, RF-19)
+// ==========================================================
+router.post('/:id/cerrar-corte', async (req, res) => {
+    const domingo_id = req.params.id;
+    const db = getDB();
+
+    try {
+        const domingo = await db.get('SELECT cerrado FROM domingos WHERE id = ?', [domingo_id]);
+        
+        if (!domingo) {
+            return res.status(404).json({ mensaje: 'El domingo indicado no existe.' });
+        }
+        if (domingo.cerrado === 1) {
+            return res.status(400).json({ mensaje: 'Este domingo ya se encuentra cerrado.' });
+        }
+
+        // INICIO DE LA TRANSACCIÓN ACID (QAW Escenario #3)
+        await db.run('BEGIN TRANSACTION'); 
+
+        const fechaActual = new Date().toISOString();
+        await db.run(
+            `UPDATE domingos SET cerrado = 1, fecha_cierre = ? WHERE id = ?`, 
+            [fechaActual, domingo_id]
+        );
+
+        const ventasRanking = await db.all(`
+            SELECT mesero_id, total_vendido 
+            FROM ventas 
+            WHERE domingo_id = ? 
+            ORDER BY total_vendido DESC
+        `, [domingo_id]);
+
+        if (ventasRanking.length === 0) {
+            throw new Error("No se puede cerrar el corte: no hay ventas registradas para este domingo.");
+        }
+
+        const meserosTop6 = [];
+        const meserosResto = [];
+
+        for (let i = 0; i < ventasRanking.length; i++) {
+            const posicion = i + 1;
+            const esTop6 = posicion <= 6 ? 1 : 0;
+            const mesero_id = ventasRanking[i].mesero_id;
+            const total = ventasRanking[i].total_vendido;
+
+            await db.run(`
+                INSERT INTO rankings (domingo_id, mesero_id, posicion, total_vendido, top6)
+                VALUES (?, ?, ?, ?, ?)
+            `, [domingo_id, mesero_id, posicion, total, esTop6]);
+
+            if (esTop6) {
+                meserosTop6.push(mesero_id);
+            } else {
+                meserosResto.push(mesero_id);
+            }
+        }
+
+        await actualizarRachasAutomatica(meserosTop6, meserosResto, db);
+
+        // CONFIRMAR TRANSACCIÓN ACID
+        await db.run('COMMIT');
+
+        return res.status(200).json({ 
+            mensaje: 'Corte dominical cerrado, ranking calculado y rachas actualizadas exitosamente.',
+            top6: meserosTop6
+        });
+
+    } catch (error) {
+        // REVERTIR CAMBIOS SI HAY ERROR (ACID)
+        await db.run('ROLLBACK');
+        console.error('Error al cerrar el corte:', error);
+        return res.status(500).json({ mensaje: 'Error al cerrar el corte', error: error.message });
     }
 });
 
