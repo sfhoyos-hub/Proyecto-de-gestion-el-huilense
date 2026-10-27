@@ -1,0 +1,169 @@
+
+:root {
+  /* Verdes */
+  --hl-verde-900: #0f2e22;   /* panel de marca, texto principal */
+  --hl-verde-700: #17543c;   /* botones y navegación */
+  --hl-verde-500: #2f7a58;   /* estados válidos */
+  /* Neutros cálidos */
+  --hl-crema: #fbf6ea;       /* fondo de página */
+  --hl-papel: #fffdf8;       /* fondo de tarjetas */
+  --hl-borde: #d9d2bf;
+  --hl-gris: #5c6660;        /* texto secundario (contraste 5.5:1 sobre crema) */
+  /* Acentos */
+  --hl-dorado: #c9a24a;      /* decoración y foco */
+  --hl-dorado-claro: #e3c675;/* texto dorado sobre verde oscuro */
+  --hl-rojo: #a12d2d;        /* errores y acciones destructivas */
+  --hl-rojo-fondo: #fbeded;
+
+  /* Forma y elevación */
+  --hl-radio: 0.75rem;
+  --hl-radio-lg: 1rem;
+  --hl-sombra: 0 1px 2px rgb(15 46 34 / 0.08), 0 8px 24px rgb(15 46 34 / 0.1);
+
+  /* Tipografía: fuentes del sistema, sin descargas externas */
+  --hl-fuente-titulo: "Iowan Old Style", "Palatino Linotype", Palatino,
+    "Book Antiqua", Georgia, serif;
+  --hl-fuente-texto: system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  --hl-transicion: 160ms ease;
+}
+
+/* ---------- Base ---------- */
+/* Selector universal + pseudoelementos: tamaño predecible en todo el sitio */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 100%; /* respeta el tamaño elegido por la persona usuaria */
+}
+
+body {
+  margin: 0;
+  background-color: var(--hl-crema);
+  color: var(--hl-verde-900);
+  font-family: var(--hl-fuente-texto);
+  line-height: 1.5;
+}
+
+/* Selector agrupado: todos los títulos comparten la fuente de acento */
+h1,
+h2,
+h3 {
+  font-family: var(--hl-fuente-titulo);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+/* Un atributo `hidden` siempre debe ocultar, aunque otra regla fije display */
+[hidden] {
+  display: none !important;
+}
+
+::selection {
+  background: var(--hl-dorado-claro);
+  color: var(--hl-verde-900);
+}
+
+/* ---------- Accesibilidad ---------- */
+/* Foco visible para teclado en cualquier elemento interactivo */
+:focus-visible {
+  outline: 3px solid var(--hl-dorado);
+  outline-offset: 2px;
+}
+
+/* Enlace "saltar al contenido": oculto hasta que recibe foco */
+.salto {
+  position: absolute;
+  top: -4rem;
+  left: 0.75rem;
+  z-index: 1100;
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 var(--hl-radio) var(--hl-radio);
+  background: var(--hl-verde-900);
+  color: var(--hl-crema);
+  text-decoration: none;
+  transition: top var(--hl-transicion);
+}
+
+.salto:focus {
+  top: 0;
+}
+
+/* ---------- Botón principal (Bootstrap .btn + variables propias) ---------- */
+.boton {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--hl-verde-700);
+  --bs-btn-border-color: var(--hl-verde-700);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--hl-verde-900);
+  --bs-btn-hover-border-color: var(--hl-verde-900);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--hl-verde-900);
+  --bs-btn-active-border-color: var(--hl-verde-900);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: var(--hl-verde-700);
+  --bs-btn-disabled-border-color: var(--hl-verde-700);
+  --bs-btn-disabled-opacity: 0.8;
+  --bs-btn-border-radius: var(--hl-radio);
+  --bs-btn-font-weight: 600;
+  min-height: 3rem;
+  transition: background-color var(--hl-transicion),
+    transform var(--hl-transicion), box-shadow var(--hl-transicion);
+}
+
+/* :not(:disabled) evita efectos de "pulsar" mientras se procesa la petición */
+.boton:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgb(15 46 34 / 0.25);
+}
+
+.boton:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.boton:disabled {
+  cursor: progress;
+}
+
+/* ---------- Mensajes (alertas de Bootstrap con colores de marca) ---------- */
+.mensaje {
+  --bs-alert-border-radius: var(--hl-radio);
+  --bs-alert-padding-y: 0.75rem;
+  margin-bottom: 0;
+  font-size: 0.925rem;
+}
+
+.mensaje--error {
+  --bs-alert-color: #7a1f1f;
+  --bs-alert-bg: var(--hl-rojo-fondo);
+  --bs-alert-border-color: #e3b4b4;
+}
+
+.mensaje--info {
+  --bs-alert-color: var(--hl-verde-900);
+  --bs-alert-bg: #eef3ea;
+  --bs-alert-border-color: #c5d6c3;
+}
+
+.mensaje--exito {
+  --bs-alert-color: #0d3a28;
+  --bs-alert-bg: #e3f1e8;
+  --bs-alert-border-color: #a9d1b8;
+}
+
+/* ---------- Movimiento reducido ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
