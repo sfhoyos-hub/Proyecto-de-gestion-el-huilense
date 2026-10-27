@@ -3,7 +3,7 @@
 
 const express = require('express');
 const router = express.Router();
-
+const { requireAuth, requireRole } = require('../../middleware/auth');
 const { getDB } = require('../../database/initDB');
 
 
@@ -20,7 +20,7 @@ function esFechaValida(fecha) {
 // GET /ranking?fecha=YYYY-MM-DD
 // Consulta el ranking de un domingo
 // ============================================
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, requireRole('ADMIN'), async (req, res) => {
     try {
         const db = getDB();
         const { fecha } = req.query;
@@ -76,7 +76,7 @@ router.get('/', async (req, res) => {
 // GET /ranking/top6?fecha=YYYY-MM-DD
 // Consulta los seis primeros
 // ============================================
-router.get('/top6', async (req, res) => {
+router.get('/top6', requireAuth, requireRole('ADMIN'), async (req, res) => {
     try {
         const db = getDB();
         const { fecha } = req.query;
@@ -132,7 +132,7 @@ router.get('/top6', async (req, res) => {
 // POST /ranking/generar
 // Genera el ranking de un domingo
 // ============================================
-router.post('/generar', async (req, res) => {
+router.post('/generar',requireAuth,requireRole('ADMIN'), async (req, res) => {
     try {
         const db = getDB();
         const { fecha } = req.body;
