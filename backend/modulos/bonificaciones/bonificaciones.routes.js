@@ -3,7 +3,7 @@
  
 const express = require('express'); 
 const router = express.Router(); 
- 
+const { requireAuth, requireRole } = require('../../middleware/auth');
 const { getDB } = require('../../database/initDB'); 
  
  
@@ -29,7 +29,7 @@ function esFechaValida(fecha) {
 // Consulta las bonificaciones de un domingo 
 // ============================================ 
  
-router.get('/', async (req, res) => { 
+router.get('/',requireAuth,requireRole('ADMIN'), async (req, res) => {
     try { 
         const db = getDB(); 
         const { fecha } = req.query; 
@@ -108,8 +108,7 @@ router.get('/', async (req, res) => {
 // POST /bonificaciones/generar 
 // Genera las bonificaciones del Top 6 
 // ============================================ 
- 
-router.post('/generar', async (req, res) => { 
+router.post('/generar',requireAuth,requireRole('ADMIN'),async (req, res) => {
     try { 
         const db = getDB(); 
         const { fecha, fecha_entrega, observaciones } = req.body; 
@@ -278,7 +277,7 @@ router.post('/generar', async (req, res) => {
 // Consulta una bonificación específica 
 // ============================================ 
  
-router.get('/:id', async (req, res) => { 
+router.get('/:id',requireAuth,requireRole('ADMIN'),async (req, res) => {
     try { 
         const db = getDB(); 
         const { id } = req.params; 
