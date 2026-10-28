@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Huilense - Panel Mesero</title>
+  <link rel="stylesheet" href="../css/ranking-mesero.css">
+</head>
+<body>
+
+  <!-- Header Semántico -->
+  <header>
+    <nav>
+      <h1>El Huilense - Panel Mesero</h1>
+      <button type="button" class="btn-logout" id="btn-cerrar-sesion">Cerrar Sesión</button>
+    </nav>
+  </header>
+
+  <!-- Contenido Principal -->
+  <main>
+    
+    <!-- Perfil del Mesero -->
+    <section class="card">
+      <h2>Mis Datos Personales</h2>
+      <div class="profile-grid">
+        <article class="profile-item">
+          <label>Nombre Completo</label>
+          <span id="perf-nombre">-</span>
+        </article>
+        <article class="profile-item">
+          <label>Identificación</label>
+          <span id="perf-identificacion">-</span>
+        </article>
+        <article class="profile-item">
+          <label>Rol Asignado</label>
+          <span id="perf-rol">MESERO</span>
+        </article>
+      </div>
+    </section>
+
+    <!-- Consulta -->
+    <section class="card">
+      <h2>Consulta de Ranking</h2>
+      <form id="form-consulta-ranking" onsubmit="return false;">
+        <div class="form-group">
+          <label for="fecha-ranking">Seleccione la fecha del domingo:</label>
+          <input type="date" id="fecha-ranking" required>
+        </div>
+        <button type="button" class="btn-consultar" id="btn-buscar">Consultar Puesto</button>
+      </form>
+    </section>
+
+    <!-- Mensajes / Alertas -->
+    <div id="mensaje-estado" class="mensaje" role="alert"></div>
+
+    <!-- Resultados -->
+    <section class="card resultado-grid" id="resultado-ranking">
+      <article class="stat-box">
+        <p class="stat-value" id="res-posicion">-</p>
+        <p class="stat-label">Posición en Ranking</p>
+        <div id="res-badge-top" class="badge"></div>
+      </article>
+
+      <article class="stat-box">
+        <p class="stat-value" id="res-total">$0</p>
+        <p class="stat-label">Total Vendido</p>
+      </article>
+    </section>
+
+  </main>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/mesero-ranking.js"></script>
+</body>
+</html>
