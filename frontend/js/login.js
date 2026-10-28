@@ -190,7 +190,7 @@
 
   function completarAcceso(usuario) {
     if (CONFIG.PANEL_DISPONIBLE) {
-      window.location.assign(CONFIG.PAGINA_PANEL);
+      window.location.assign(usuario.rol === 'MESERO' ? CONFIG.PAGINA_MESERO : CONFIG.PAGINA_PANEL);
       return;
     }
     mostrarSesionActiva(usuario);
@@ -225,9 +225,9 @@
       const { token, usuario } = extraerSesion(datos);
       campos.password.input.value = ''; // la contraseña ya no se necesita
 
-      // Solo se admite el rol ADMIN; en otro caso el token se descarta sin guardarlo.
-      if (usuario.rol !== 'ADMIN') {
-        mostrarMensaje('error', 'Esta cuenta no tiene rol de administrador. Este panel es solo para administradores.');
+      // Se admiten ADMIN y MESERO; en otro caso el token se descarta sin guardarlo.
+      if (usuario.rol !== 'ADMIN' && usuario.rol !== 'MESERO') {
+        mostrarMensaje('error', 'Esta cuenta no tiene un rol con acceso al sistema.');
         destinoFoco = campos.email.input;
         return;
       }
@@ -314,9 +314,9 @@
 
     // Sesión previa o motivo de redirección
     const sesion = Sesion.leer();
-    if (sesion && sesion.usuario.rol === 'ADMIN') {
+    if (sesion && (sesion.usuario.rol === 'ADMIN' || sesion.usuario.rol === 'MESERO')) {
       if (CONFIG.PANEL_DISPONIBLE) {
-        window.location.replace(CONFIG.PAGINA_PANEL);
+        window.location.replace(sesion.usuario.rol === 'MESERO' ? CONFIG.PAGINA_MESERO : CONFIG.PAGINA_PANEL);
         return;
       }
       mostrarSesionActiva(sesion.usuario);
