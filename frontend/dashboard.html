@@ -132,6 +132,11 @@
                                     <i class="bi bi-speedometer2 me-2"></i> Dashboard
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="meseros.html" class="nav-link unity-link">
+                                    <i class="bi bi-people-fill me-2"></i> Gestionar Meseros
+                                </a>
+                            </li>
                         </ul>
 
                         <small class="text-uppercase text-muted fw-bold extra-small tracking-wider mb-2 d-block">Acciones Rápidas</small>
@@ -272,87 +277,56 @@
                     <div class="row g-3 mb-4">
 
                         <div class="col-md-4">
-                        
                             <label for="ranking-fecha" class="form-label">
                                 Fecha del domingo
                             </label>
-
-                            <input
-
-                            type="date"
-
-                            id="ranking-fecha"
-
-                            class="form-control"
-
-                            required
-
-                            >
-
+                            <input type="date" id="ranking-fecha" class="form-control" required>
                         </div>
                         <div class="col-md-8 d-flex align-items-end gap-2 flex-wrap">
-    
-                            <button type="button" id="btn-consultar-ranking"
-    
-                            class="btn btn-outline-huilense">
-    
-                            Consultar ranking
-    
-                        </button>
+                            <button type="button" id="btn-consultar-ranking" class="btn btn-outline-huilense">
+                                Consultar ranking
+                            </button>
+                            <button type="button" id="btn-generar-ranking" class="btn btn-huilense">
+                                Generar ranking
+                            </button>
+                            <button type="button" id="btn-consultar-bonos" class="btn btn-outline-success">
+                                Consultar bonificaciones
+                            </button>
+                            <button type="button" id="btn-generar-bonos" class="btn btn-success">
+                                Generar bonificaciones
+                            </button>
+                        </div>
+                    </div>
 
-                        
-        
-                        <button type="button" id="btn-generar-ranking"
-        
-                        class="btn btn-huilense">
-        
-                        Generar ranking
-        
-                    </button>
-                    <button type="button" id="btn-consultar-bonos"
-                    class="btn btn-outline-success">
-                    Consultar bonificaciones
-                </button>
-                <button type="button" id="btn-generar-bonos"
-                class="btn btn-success">
-                Generar bonificaciones
-            </button>
-        </div>
-    </div>
+                    <div id="tabla-ranking-contenedor" class="table-responsive mb-4" style="display: none;">
+                        <h6 class="fw-bold">Ranking del domingo</h6>
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Puesto</th>
+                                    <th>Mesero</th>
+                                    <th>Total vendido</th>
+                                    <th>Top 6</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-ranking-cuerpo"></tbody>
+                        </table>
+                    </div>
 
-<div id="tabla-ranking-contenedor" class="table-responsive mb-4"
-     style="display: none;">
-    <h6 class="fw-bold">Ranking del domingo</h6>
-
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>Puesto</th>
-                <th>Mesero</th>
-                <th>Total vendido</th>
-                <th>Top 6</th>
-            </tr>
-        </thead>
-        <tbody id="tabla-ranking-cuerpo"></tbody>
-    </table>
-</div>
-
-<div id="tabla-bonificaciones-contenedor" class="table-responsive"
-     style="display: none;">
-    <h6 class="fw-bold">Bonificaciones del domingo</h6>
-
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>Mesero</th>
-                <th>Puesto</th>
-                <th>Monto</th>
-                <th>Fecha de entrega</th>
-            </tr>
-        </thead>
-        <tbody id="tabla-bonificaciones-cuerpo"></tbody>
-    </table>
-</div>
+                    <div id="tabla-bonificaciones-contenedor" class="table-responsive" style="display: none;">
+                        <h6 class="fw-bold">Bonificaciones del domingo</h6>
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mesero</th>
+                                    <th>Puesto</th>
+                                    <th>Monto</th>
+                                    <th>Fecha de entrega</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-bonificaciones-cuerpo"></tbody>
+                        </table>
+                    </div>
 
                     <div id="resultado-ranking" style="display: none;">
                         <div class="alert bg-huilense-soft border-0 p-3 rounded-3 mb-0">
