@@ -3,7 +3,7 @@
 
 const express = require('express');
 const router = express.Router();
-
+const { requireAuth, requireRole } = require('../../middleware/auth.middleware');
 const { getDB } = require('../../database/initDB');
 
 
@@ -20,7 +20,7 @@ function esFechaValida(fecha) {
 // GET /ranking?fecha=YYYY-MM-DD
 // Consulta el ranking de un domingo
 // ============================================
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, requireRole('ADMIN'), async (req, res) => {
     try {
         const db = getDB();
         const { fecha } = req.query;
@@ -76,7 +76,7 @@ router.get('/', async (req, res) => {
 // GET /ranking/top6?fecha=YYYY-MM-DD
 // Consulta los seis primeros
 // ============================================
-router.get('/top6', async (req, res) => {
+router.get('/top6', requireAuth, requireRole('ADMIN'), async (req, res) => {
     try {
         const db = getDB();
         const { fecha } = req.query;
@@ -132,7 +132,7 @@ router.get('/top6', async (req, res) => {
 // POST /ranking/generar
 // Genera el ranking de un domingo
 // ============================================
-router.post('/generar', async (req, res) => {
+router.post('/generar',requireAuth,requireRole('ADMIN'), async (req, res) => {
     try {
         const db = getDB();
         const { fecha } = req.body;
@@ -259,6 +259,59 @@ router.post('/generar', async (req, res) => {
         });
     }
 });
+// ============================================
+// GET /ranking/consultar puesto propio
+// para que el mesero consulte su posicion en el ranking
+// ============================================
+router.get('/mi-puesto',requireAuth,requireRole('MESERO'),async (req, res) => {
+    try {
+      const { fecha } = req.query;
 
+      if (!esFechaValida(fecha)) {
+        return res.status(400).json({
+          mensaje: 'Debes proporcionar una fecha válida en formato YYYY-MM-DD'
+        });
+      }
 
+      const db = await getDB();
+
+      const domingo = await db.get(
+        'SELECT id FROM domingos WHERE fecha = ?',
+        [fecha]
+      );
+
+      if (!domingo) {
+        return res.status(404).json({
+          mensaje: 'No existe un domingo registrado para esa fecha'
+        });
+      }
+
+      const puesto = await db.get(
+        `SELECT
+           r.posicion,
+           r.top6,
+           r.total_vendido,
+           m.id AS mesero_id
+         FROM rankings r
+         INNER JOIN meseros m ON m.id = r.mesero_id
+         WHERE r.domingo_id = ?
+           AND m.id = ?`,
+        [domingo.id, req.user.mesero_id]
+      );
+
+      if (!puesto) {
+        return res.status(404).json({
+          mensaje: 'Todavía no tienes un puesto registrado para esa fecha'
+        });
+      }
+
+      return res.json(puesto);
+    } catch (error) {
+      console.error('Error al consultar el puesto:', error);
+      return res.status(500).json({
+        mensaje: 'Error interno al consultar tu puesto'
+      });
+    }
+  }
+);
 module.exports = router;

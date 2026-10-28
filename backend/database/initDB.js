@@ -193,6 +193,7 @@
         // =========================
         // SUGERENCIAS
         // =========================
+    
         await db.exec(`
             CREATE TABLE IF NOT EXISTS sugerencias (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -200,7 +201,6 @@
                 fecha TEXT NOT NULL
             )
         `);
-
         console.log('Base de datos SQLite conectada y tablas verificadas.');
 
         return db;
