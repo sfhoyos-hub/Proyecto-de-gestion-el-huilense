@@ -20,12 +20,11 @@
 </head>
 <body class="bg-unity-layout">
 
-    <!-- HEADER SUPERIOR ESTILO UNITY (VERDE ESMERALDA CON KPIS EN LA CABECERA) -->
+    <!-- HEADER SUPERIOR ESTILO UNITY -->
     <header class="unity-header text-white pb-5">
         <div class="container-fluid px-4 py-3">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
                 
-                <!-- Logo & Breadcrumb -->
                 <div class="d-flex align-items-center gap-3">
                     <button class="btn btn-outline-light btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarUnity">
                         <i class="bi bi-list fs-5"></i>
@@ -42,7 +41,6 @@
                     </nav>
                 </div>
 
-                <!-- Notificaciones y Logout Rápido -->
                 <div class="d-flex align-items-center gap-3">
                     <div class="header-badge d-none d-sm-flex align-items-center px-3 py-1.5 rounded-pill bg-white-10">
                         <span class="live-dot me-2"></span>
@@ -54,7 +52,7 @@
                 </div>
             </div>
 
-            <!-- FILA DE KPIS EN EL HEADER -->
+            <!-- KPIS EN EL HEADER -->
             <div class="row g-3 mt-3">
                 <div class="col-6 col-md-3">
                     <div class="kpi-header-card p-3 rounded-4 bg-white-15">
@@ -107,41 +105,31 @@
         </div>
     </header>
 
-    <!-- CONTAINER PRINCIPAL CON LAYOUT DOS COLUMNAS -->
+    <!-- CONTAINER PRINCIPAL -->
     <div class="container-fluid px-4 main-content-wrapper">
         <div class="row g-4">
 
-            <!-- COLUMNA IZQUIERDA: SIDEBAR DE USUARIO Y NAVEGACIÓN -->
+            <!-- SIDEBAR -->
             <aside class="col-lg-3 col-xl-2">
                 <div class="unity-sidebar bg-white p-4 rounded-4 shadow-sm border-0 offcanvas-lg offcanvas-start" id="sidebarUnity">
                     
-                    <!-- Perfil del Admin con fijación de texto para correos largos -->
                     <div class="text-center pb-4 border-bottom mb-4 profile-card-container">
                         <div class="avatar-box mx-auto mb-3 shadow-sm">
                             <i class="bi bi-person-circle fs-1 text-huilense"></i>
                         </div>
                         <h6 class="fw-bold text-dark mb-1 text-truncate" id="nombre-admin">Cargando...</h6>
-                        
-                        <!-- Correo optimizado con elipsis y tooltip al pasar el cursor -->
                         <small class="text-muted d-block mb-2 text-truncate user-email-text" id="dropdown-admin-email" title="admin@elhuilense.com">
                             admin@elhuilense.com
                         </small>
-                        
                         <span class="badge bg-huilense-soft text-huilense rounded-pill px-3 py-1">Administrador</span>
                     </div>
 
-                    <!-- Menú Principal Vertical -->
                     <div class="sidebar-menu">
                         <small class="text-uppercase text-muted fw-bold extra-small tracking-wider mb-2 d-block">Navegación</small>
                         <ul class="nav flex-column gap-2 mb-4">
                             <li class="nav-item">
                                 <a href="dashboard.html" class="nav-link unity-link active">
                                     <i class="bi bi-speedometer2 me-2"></i> Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="meseros.html" class="nav-link unity-link">
-                                    <i class="bi bi-people me-2"></i> Gestión Meseros
                                 </a>
                             </li>
                         </ul>
@@ -154,6 +142,9 @@
                             <button class="btn btn-outline-huilense btn-sm text-start" data-bs-toggle="modal" data-bs-target="#modalVenta">
                                 <i class="bi bi-receipt text-gold me-2"></i> Registrar Venta
                             </button>
+                            <button class="btn btn-outline-huilense btn-sm text-start" data-bs-toggle="modal" data-bs-target="#modalPago">
+                                <i class="bi bi-cash-coin text-gold me-2"></i> Registrar Pago
+                            </button>
                             <button class="btn btn-gold btn-sm text-start text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#modalCierre">
                                 <i class="bi bi-trophy me-2"></i> Cerrar Corte
                             </button>
@@ -163,7 +154,7 @@
                 </div>
             </aside>
 
-            <!-- COLUMNA DERECHA: SECCIONES Y TABLAS PRINCIPALES -->
+            <!-- COLUMNA DERECHA: CONTENIDO Y TABLAS -->
             <main class="col-lg-9 col-xl-10">
                 
                 <div id="zona-mensajes" aria-live="assertive"></div>
@@ -172,7 +163,7 @@
                 <div class="unity-welcome-card bg-white p-4 rounded-4 shadow-sm border-0 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
                     <div>
                         <h3 class="font-serif fw-bold text-huilense mb-1">¡Bienvenido de nuevo, Admin! 👋</h3>
-                        <p class="text-muted mb-0 small">Aquí tienes el resumen operativo de las jornadas dominicales y ventas en vivo.</p>
+                        <p class="text-muted mb-0 small">Aquí tienes el resumen operativo de las jornadas dominicales, ventas y pagos.</p>
                     </div>
                     <div class="d-flex gap-2">
                         <button class="btn btn-huilense px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalVenta">
@@ -181,10 +172,9 @@
                     </div>
                 </div>
 
-                <!-- TABLAS DE INFORMACIÓN -->
+                <!-- TABLAS DE JORNADAS Y VENTAS -->
                 <div class="row g-4 mb-4">
                     
-                    <!-- TABLA JORNADAS -->
                     <div class="col-xl-6">
                         <div class="bg-white p-4 rounded-4 shadow-sm border-0 h-100">
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -193,7 +183,7 @@
                                     + Crear Fecha
                                 </button>
                             </div>
-                            <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                            <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
                                 <table class="table table-hover align-middle mb-0">
                                     <thead class="table-light">
                                         <tr>
@@ -211,7 +201,6 @@
                         </div>
                     </div>
 
-                    <!-- TABLA VENTAS EN VIVO -->
                     <div class="col-xl-6">
                         <div class="bg-white p-4 rounded-4 shadow-sm border-0 h-100">
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -220,7 +209,7 @@
                                     + Añadir Venta
                                 </button>
                             </div>
-                            <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                            <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
                                 <table class="table table-hover align-middle mb-0">
                                     <thead class="table-light">
                                         <tr>
@@ -239,7 +228,37 @@
 
                 </div>
 
-                <!-- BANNER DE RANKING (TOP 6) -->
+                <!-- SECCIÓN DE PAGOS Y BONIFICACIONES -->
+                <div class="bg-white p-4 rounded-4 shadow-sm border-0 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <h5 class="font-serif fw-bold text-huilense mb-1"><i class="bi bi-cash-coin text-gold me-2"></i>Gestión de Pagos y Bonificaciones</h5>
+                            <p class="text-muted small mb-0">Cálculo de incentivos dominicales y liquidación para los meseros.</p>
+                        </div>
+                        <button class="btn btn-huilense btn-sm px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#modalPago">
+                            <i class="bi bi-plus-circle me-1"></i> Registrar Pago / Bono
+                        </button>
+                    </div>
+
+                    <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID Mesero</th>
+                                    <th>Jornada</th>
+                                    <th>Salario Base</th>
+                                    <th>Bonificación</th>
+                                    <th class="text-end">Total Pagado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-pagos-cuerpo">
+                                <tr><td colspan="5" class="text-center py-4 text-muted">Cargando registros de pagos...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- RANKING (TOP 6) -->
                 <div class="bg-white p-4 rounded-4 shadow-sm border-0 mb-4">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                         <div>
@@ -250,6 +269,90 @@
                             <i class="bi bi-check2-all me-1"></i> Cerrar Corte
                         </button>
                     </div>
+                    <div class="row g-3 mb-4">
+
+                        <div class="col-md-4">
+                        
+                            <label for="ranking-fecha" class="form-label">
+                                Fecha del domingo
+                            </label>
+
+                            <input
+
+                            type="date"
+
+                            id="ranking-fecha"
+
+                            class="form-control"
+
+                            required
+
+                            >
+
+                        </div>
+                        <div class="col-md-8 d-flex align-items-end gap-2 flex-wrap">
+    
+                            <button type="button" id="btn-consultar-ranking"
+    
+                            class="btn btn-outline-huilense">
+    
+                            Consultar ranking
+    
+                        </button>
+
+                        
+        
+                        <button type="button" id="btn-generar-ranking"
+        
+                        class="btn btn-huilense">
+        
+                        Generar ranking
+        
+                    </button>
+                    <button type="button" id="btn-consultar-bonos"
+                    class="btn btn-outline-success">
+                    Consultar bonificaciones
+                </button>
+                <button type="button" id="btn-generar-bonos"
+                class="btn btn-success">
+                Generar bonificaciones
+            </button>
+        </div>
+    </div>
+
+<div id="tabla-ranking-contenedor" class="table-responsive mb-4"
+     style="display: none;">
+    <h6 class="fw-bold">Ranking del domingo</h6>
+
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Puesto</th>
+                <th>Mesero</th>
+                <th>Total vendido</th>
+                <th>Top 6</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-ranking-cuerpo"></tbody>
+    </table>
+</div>
+
+<div id="tabla-bonificaciones-contenedor" class="table-responsive"
+     style="display: none;">
+    <h6 class="fw-bold">Bonificaciones del domingo</h6>
+
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Mesero</th>
+                <th>Puesto</th>
+                <th>Monto</th>
+                <th>Fecha de entrega</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-bonificaciones-cuerpo"></tbody>
+    </table>
+</div>
 
                     <div id="resultado-ranking" style="display: none;">
                         <div class="alert bg-huilense-soft border-0 p-3 rounded-3 mb-0">
@@ -326,6 +429,41 @@
                     <div class="modal-footer bg-light px-4">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-huilense">Guardar Venta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalPago" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-huilense text-white px-4">
+                    <h5 class="modal-title font-serif"><i class="bi bi-cash-coin text-gold me-2"></i>Registrar Pago y Bono</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="form-pago" novalidate>
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label for="pago-mesero-id" class="form-label fw-semibold text-huilense">ID del Mesero</label>
+                            <input type="number" class="form-control" id="pago-mesero-id" min="1" placeholder="Ej. 1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pago-domingo-id" class="form-label fw-semibold text-huilense">ID del Domingo / Jornada</label>
+                            <input type="number" class="form-control" id="pago-domingo-id" min="1" placeholder="Ej. 1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pago-base" class="form-label fw-semibold text-huilense">Valor Base ($)</label>
+                            <input type="number" class="form-control" id="pago-base" min="0" step="500" placeholder="Ej. 50000" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pago-bonificacion" class="form-label fw-semibold text-huilense">Bonificación por Racha / Ventas ($)</label>
+                            <input type="number" class="form-control" id="pago-bonificacion" min="0" step="500" placeholder="Ej. 20000" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-huilense">Guardar Liquidación</button>
                     </div>
                 </form>
             </div>

@@ -6,6 +6,9 @@
 
   const { Sesion, peticion, CONFIG } = window.Huilense;
 
+  // Modal de Pagos Instanciado
+  const modalPagoBs = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPago'));
+
   // 1. Validar Sesión Activa
   const sesionActual = Sesion.leer();
   if (!sesionActual || sesionActual.usuario.rol !== 'ADMIN') {
@@ -222,5 +225,259 @@
   // Carga Inicial
   cargarMeseros();
   cargarJornadas();
+
+  // 7. Cargar Listado de Pagos y Bonificaciones
+  async function cargarPagos() {
+    const tablaCuerpo = document.getElementById('tabla-pagos-cuerpo');
+    try {
+      const respuesta = await peticion('/pagos', { metodo: 'GET', autenticada: true });
+      const pagos = Array.isArray(respuesta) ? respuesta : (respuesta?.data || []);
+
+      if (pagos.length === 0) {
+        tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-3 text-muted">No hay pagos registrados aún.</td></tr>`;
+        return;
+      }
+
+      tablaCuerpo.innerHTML = pagos.map(p => `
+        <tr>
+          <td class="fw-bold text-huilense">Mesero #${p.mesero_id}</td>
+          <td>Jornada #${p.domingo_id || p.fecha || 'N/A'}</td>
+          <td>$${Number(p.valor_base || 0).toLocaleString()}</td>
+          <td class="text-success fw-semibold">+$${Number(p.bonificacion || 0).toLocaleString()}</td>
+          <td class="text-end fw-bold text-dark">$${Number(p.total_pagado || (p.valor_base + p.bonificacion)).toLocaleString()}</td>
+        </tr>
+      `).join('');
+    } catch (error) {
+      tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-3 text-muted">Módulo de pagos listo en el frontend.</td></tr>`;
+    }
+  }
+
+  // 8. Submit Registrar Pago / Bono
+  const formPago = document.getElementById('form-pago');
+  if (formPago) {
+    formPago.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const mesero_id = Number(document.getElementById('pago-mesero-id').value);
+      const domingo_id = Number(document.getElementById('pago-domingo-id').value);
+      const valor_base = Number(document.getElementById('pago-base').value);
+      const bonificacion = Number(document.getElementById('pago-bonificacion').value);
+
+      try {
+        const respuesta = await peticion('/pagos', { 
+          metodo: 'POST', 
+          cuerpo: { mesero_id, domingo_id, valor_base, bonificacion }, 
+          autenticada: true 
+        });
+        mostrarAlerta('exito', respuesta.mensaje || 'Pago y bonificación registrados con éxito.');
+        e.target.reset();
+        modalPagoBs.hide();
+        cargarPagos();
+      } catch (error) {
+        mostrarAlerta('error', error.message || 'Error al registrar el pago.');
+      }
+    });
+  }
+
+  // Llamar carga inicial de pagos al arrancar
+  cargarPagos();
+  
+  // 9. Consultar y generar ranking y bonificaciones
+
+  const campoFechaRanking = document.getElementById('ranking-fecha');
+
+  // Formatear dinero en pesos colombianos
+  function formatoCOP(valor) {
+    return Number(valor || 0).toLocaleString('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      maximumFractionDigits: 0
+    });
+  }
+
+  // Validar fecha seleccionada
+  function obtenerFechaRanking() {
+    const fecha = campoFechaRanking.value;
+
+    if (!fecha) {
+      mostrarAlerta('error', 'Selecciona la fecha del domingo.');
+      return null;
+    }
+
+    return fecha;
+  }
+
+  // Consultar ranking completo o Top 6
+  async function consultarRanking(soloTop6 = false) {
+    const fecha = obtenerFechaRanking();
+    if (!fecha) return;
+
+    const contenedor = document.getElementById(
+      'tabla-ranking-contenedor'
+    );
+    const cuerpo = document.getElementById('tabla-ranking-cuerpo');
+
+    try {
+      const ruta = soloTop6
+        ? `/ranking/top6?fecha=${encodeURIComponent(fecha)}`
+        : `/ranking?fecha=${encodeURIComponent(fecha)}`;
+
+      const respuesta = await peticion(ruta, {
+        metodo: 'GET',
+        autenticada: true
+      });
+
+      const registros = soloTop6
+        ? respuesta.top6
+        : respuesta.ranking;
+
+      cuerpo.innerHTML = registros.map(item => `
+        <tr>
+          <td class="fw-bold">${item.posicion}</td>
+          <td>${item.nombre} ${item.apellido}</td>
+          <td>${formatoCOP(item.total_vendido)}</td>
+          <td>
+            ${Number(item.top6) === 1
+              ? '<span class="badge bg-success">Sí</span>'
+              : '<span class="badge bg-secondary">No</span>'}
+          </td>
+        </tr>
+      `).join('');
+
+      if (registros.length === 0) {
+        cuerpo.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center">
+              No hay resultados para esta fecha.
+            </td>
+          </tr>
+        `;
+      }
+
+      contenedor.style.display = 'block';
+      mostrarAlerta('exito', 'Ranking consultado correctamente.');
+
+    } catch (error) {
+      mostrarAlerta('error', error.message);
+    }
+  }
+
+  // Generar ranking
+  async function generarRanking() {
+    const fecha = obtenerFechaRanking();
+    if (!fecha) return;
+
+    try {
+      const respuesta = await peticion('/ranking/generar', {
+        metodo: 'POST',
+        cuerpo: { fecha },
+        autenticada: true
+      });
+
+      mostrarAlerta(
+        'exito',
+        respuesta.mensaje || 'Ranking generado correctamente.'
+      );
+
+      await consultarRanking();
+
+    } catch (error) {
+      mostrarAlerta('error', error.message);
+    }
+  }
+
+  // Consultar bonificaciones
+  async function consultarBonificaciones() {
+    const fecha = obtenerFechaRanking();
+    if (!fecha) return;
+
+    const contenedor = document.getElementById(
+      'tabla-bonificaciones-contenedor'
+    );
+    const cuerpo = document.getElementById(
+      'tabla-bonificaciones-cuerpo'
+    );
+
+    try {
+      const respuesta = await peticion(
+        `/bonificaciones?fecha=${encodeURIComponent(fecha)}`,
+        {
+          metodo: 'GET',
+          autenticada: true
+        }
+      );
+
+      const registros = respuesta.bonificaciones || [];
+
+      cuerpo.innerHTML = registros.map(item => `
+        <tr>
+          <td>${item.nombre} ${item.apellido}</td>
+          <td>${item.posicion}</td>
+          <td class="fw-bold text-success">
+            ${formatoCOP(item.monto)}
+          </td>
+          <td>${item.fecha_entrega || 'Sin fecha'}</td>
+        </tr>
+      `).join('');
+
+      if (registros.length === 0) {
+        cuerpo.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center">
+              No hay bonificaciones registradas.
+            </td>
+          </tr>
+        `;
+      }
+
+      contenedor.style.display = 'block';
+
+      mostrarAlerta(
+        'exito',
+        `Total de bonificaciones: ${formatoCOP(
+          respuesta.total_bonificaciones
+        )}`
+      );
+
+    } catch (error) {
+      mostrarAlerta('error', error.message);
+    }
+  }
+
+  // Generar bonificaciones del Top 6
+  async function generarBonificaciones() {
+    const fecha = obtenerFechaRanking();
+    if (!fecha) return;
+
+    try {
+      const respuesta = await peticion('/bonificaciones/generar', {
+        metodo: 'POST',
+        cuerpo: { fecha },
+        autenticada: true
+      });
+
+      mostrarAlerta(
+        'exito',
+        respuesta.mensaje || 'Bonificaciones generadas correctamente.'
+      );
+
+      await consultarBonificaciones();
+
+    } catch (error) {
+      mostrarAlerta('error', error.message);
+    }
+  }
+
+  // Asociar botones con sus funciones
+  document.getElementById('btn-consultar-ranking')
+    .addEventListener('click', () => consultarRanking());
+
+  document.getElementById('btn-generar-ranking')
+    .addEventListener('click', generarRanking);
+
+  document.getElementById('btn-consultar-bonos')
+    .addEventListener('click', consultarBonificaciones);
+
+  document.getElementById('btn-generar-bonos')
+    .addEventListener('click', generarBonificaciones);
 
 })();
