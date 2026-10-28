@@ -118,6 +118,7 @@ body.bg-unity-layout {
 .bg-huilense-soft { background-color: var(--huilense-green-soft) !important; }
 .text-gold { color: var(--huilense-gold) !important; }
 .bg-gold { background-color: var(--huilense-gold) !important; }
+.bg-huilense { background-color: var(--huilense-green) !important; }
 
 .btn-huilense {
     background-color: var(--huilense-green);

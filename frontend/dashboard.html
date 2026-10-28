@@ -30,7 +30,7 @@
                     <button class="btn btn-outline-light btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarUnity">
                         <i class="bi bi-list fs-5"></i>
                     </button>
-                    <a class="navbar-brand font-serif fw-bold fs-3 text-white d-flex align-items-center mb-0" href="admin.html">
+                    <a class="navbar-brand font-serif fw-bold fs-3 text-white d-flex align-items-center mb-0" href="dashboard.html">
                         <i class="fa-solid fa-utensils text-gold me-2"></i>
                         <span>El Huilense</span>
                     </a>
@@ -84,7 +84,7 @@
                     <div class="kpi-header-card p-3 rounded-4 bg-white-15">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <small class="text-white-50 d-block fw-semibold text-uppercase">Ventas Sesión</small>
+                                <small class="text-white-50 d-block fw-semibold text-uppercase">Ventas del Domingo</small>
                                 <h4 class="fw-bold text-gold mb-0" id="kpi-total-ventas">$0</h4>
                             </div>
                             <div class="kpi-icon bg-white text-success"><i class="bi bi-cash-stack"></i></div>
@@ -135,7 +135,7 @@
                         <small class="text-uppercase text-muted fw-bold extra-small tracking-wider mb-2 d-block">Navegación</small>
                         <ul class="nav flex-column gap-2 mb-4">
                             <li class="nav-item">
-                                <a href="admin.html" class="nav-link unity-link active">
+                                <a href="dashboard.html" class="nav-link unity-link active">
                                     <i class="bi bi-speedometer2 me-2"></i> Dashboard
                                 </a>
                             </li>
@@ -306,8 +306,10 @@
                 <form id="form-venta" novalidate>
                     <div class="modal-body p-4">
                         <div class="mb-3">
-                            <label for="venta-mesero-id" class="form-label fw-semibold text-huilense">ID del Mesero</label>
-                            <input type="number" class="form-control" id="venta-mesero-id" min="1" placeholder="Ej. 1" required>
+                            <label for="venta-mesero-id" class="form-label fw-semibold text-huilense">Mesero</label>
+                            <select class="form-select" id="venta-mesero-id" required>
+                                <option value="">Cargando meseros…</option>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="venta-fecha" class="form-label fw-semibold text-huilense">Fecha de Venta</label>

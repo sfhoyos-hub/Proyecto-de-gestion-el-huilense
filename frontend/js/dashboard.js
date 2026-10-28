@@ -43,8 +43,10 @@
   const modalVentaBs = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalVenta'));
   const modalCierreBs = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCierre'));
 
-  // Array Local de Ventas
-  const ventasSesion = [];
+  // Estado local: nombres de meseros (id -> nombre) y fecha del último domingo
+  const meserosMap = new Map();
+  let fechaUltimoDomingo = '';
+  const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
   // 2. Cargar Jornadas Dominicales
   async function cargarJornadas() {
@@ -58,10 +60,12 @@
         return;
       }
 
-      const ultimo = domingos[domingos.length - 1];
+      const ultimo = domingos[0]; // la API ordena por fecha DESC
       if (ultimo) {
         document.getElementById('kpi-fecha-domingo').textContent = ultimo.fecha || '--/--/----';
         document.getElementById('kpi-meseros-count').textContent = ultimo.meseros_requeridos || '0';
+        fechaUltimoDomingo = ultimo.fecha;
+        cargarVentas(ultimo.fecha);
       }
 
       tablaCuerpo.innerHTML = domingos.map(d => `
@@ -70,9 +74,9 @@
           <td class="fw-semibold text-huilense">${d.fecha}</td>
           <td><span class="badge bg-huilense-soft text-huilense px-2 py-1">${d.meseros_requeridos} Meseros</span></td>
           <td class="text-end">
-            <button class="btn btn-sm btn-outline-huilense btn-preparar-cierre py-0 px-2" data-id="${d.id}">
-              Cerrar
-            </button>
+            ${Number(d.cerrado) === 1
+              ? '<span class="badge bg-secondary-subtle text-secondary px-2 py-1">Cerrado</span>'
+              : `<button class="btn btn-sm btn-outline-huilense btn-preparar-cierre py-0 px-2" data-id="${d.id}">Cerrar</button>`}
           </td>
         </tr>
       `).join('');
@@ -89,22 +93,60 @@
     }
   }
 
-  // 3. Renderizar Tabla de Ventas en Vivo
-  function renderizarTablaVentas() {
-    const tablaCuerpo = document.getElementById('tabla-ventas-cuerpo');
-    if (ventasSesion.length === 0) {
-      tablaCuerpo.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-muted">No hay ventas registradas en esta sesión.</td></tr>`;
-      return;
-    }
+  // 3. Meseros activos (selector) y ventas reales del último domingo
+  async function cargarMeseros() {
+    try {
+      const respuesta = await peticion('/meseros', { metodo: 'GET', autenticada: true });
+      const meseros = Array.isArray(respuesta) ? respuesta : (respuesta?.data || []);
+      const select = document.getElementById('venta-mesero-id');
+      select.innerHTML = '<option value="">Selecciona un mesero…</option>';
 
-    tablaCuerpo.innerHTML = ventasSesion.map(v => `
-      <tr>
-        <td class="fw-bold text-huilense">Mesero #${v.mesero_id}</td>
-        <td>${v.fecha}</td>
-        <td class="text-end fw-bold text-success">$${Number(v.total_vendido).toLocaleString()}</td>
-      </tr>
-    `).join('');
+      meseros.forEach((m) => {
+        meserosMap.set(m.id, `${m.nombre || ''} ${m.apellido || ''}`.trim());
+        if (m.estado === 'activo') {
+          const opcion = document.createElement('option');
+          opcion.value = m.id;
+          opcion.textContent = `${m.nombre || ''} ${m.apellido || ''} (${m.identificacion})`;
+          select.appendChild(opcion);
+        }
+      });
+    } catch (error) {
+      mostrarAlerta('error', 'No se pudo cargar la lista de meseros: ' + esc(error.message));
+    }
   }
+
+  async function cargarVentas(fecha) {
+    const tablaCuerpo = document.getElementById('tabla-ventas-cuerpo');
+    const kpiTotal = document.getElementById('kpi-total-ventas');
+    try {
+      const ventas = await peticion(`/ventas?fecha=${encodeURIComponent(fecha)}`, { metodo: 'GET', autenticada: true });
+
+      if (!Array.isArray(ventas) || ventas.length === 0) {
+        tablaCuerpo.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-muted">No hay ventas registradas para este domingo.</td></tr>`;
+        kpiTotal.textContent = '$0';
+        return;
+      }
+
+      const total = ventas.reduce((suma, v) => suma + Number(v.total_vendido), 0);
+      kpiTotal.textContent = '$' + total.toLocaleString('es-CO');
+
+      tablaCuerpo.innerHTML = ventas.map(v => `
+        <tr>
+          <td class="fw-bold text-huilense">${esc(v.nombre)} ${esc(v.apellido)}</td>
+          <td>${esc(v.fecha)}</td>
+          <td class="text-end fw-bold text-success">$${Number(v.total_vendido).toLocaleString('es-CO')}</td>
+        </tr>
+      `).join('');
+    } catch (error) {
+      tablaCuerpo.innerHTML = `<tr><td colspan="3" class="text-center py-3 text-danger">Error: ${esc(error.message)}</td></tr>`;
+    }
+  }
+
+  // Al abrir el modal de venta, se propone la fecha del último domingo
+  document.getElementById('modalVenta').addEventListener('show.bs.modal', () => {
+    const campoFecha = document.getElementById('venta-fecha');
+    if (!campoFecha.value && fechaUltimoDomingo) campoFecha.value = fechaUltimoDomingo;
+  });
 
   // 4. Submit Registrar Domingo
   document.getElementById('form-domingo').addEventListener('submit', async (e) => {
@@ -130,16 +172,16 @@
     const fecha = document.getElementById('venta-fecha').value;
     const total_vendido = Number(document.getElementById('venta-total').value);
 
+    if (!mesero_id) {
+      mostrarAlerta('error', 'Selecciona un mesero.');
+      return;
+    }
+
     try {
       const respuesta = await peticion('/ventas', { metodo: 'POST', cuerpo: { mesero_id, fecha, total_vendido }, autenticada: true });
       mostrarAlerta('exito', respuesta.mensaje || 'Venta registrada con éxito.');
       
-      ventasSesion.unshift({ mesero_id, fecha, total_vendido });
-      renderizarTablaVentas();
-
-      const totalActualElem = document.getElementById('kpi-total-ventas');
-      const actual = Number(totalActualElem.textContent.replace(/[^0-9.-]+/g, '')) || 0;
-      totalActualElem.textContent = '$' + (actual + total_vendido).toLocaleString();
+      if (fecha === fechaUltimoDomingo) cargarVentas(fecha);
 
       e.target.reset();
       modalVentaBs.hide();
@@ -168,7 +210,7 @@
 
         listaBadges.innerHTML = respuesta.top6.map((mId, index) => `
           <span class="badge bg-huilense text-white fs-6 p-2 rounded-pill shadow-sm">
-            #${index + 1} - Mesero ID: ${mId}
+            #${index + 1} - ${esc(meserosMap.get(mId) || 'Mesero ID: ' + mId)}
           </span>
         `).join('');
       }
@@ -178,7 +220,7 @@
   });
 
   // Carga Inicial
+  cargarMeseros();
   cargarJornadas();
 
 })();
-
