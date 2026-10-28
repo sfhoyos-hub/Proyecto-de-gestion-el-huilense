@@ -1,0 +1,195 @@
+/* ==========================================================================
+   El Huilense · Estilos Módulo de Meseros con Media Queries (meseros.css)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Georgia:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+    --huilense-green: #0F4C3A;       /* Verde Esmeralda Principal */
+    --huilense-green-dark: #0A3629;  /* Verde Oscuro Header */
+    --huilense-green-soft: #EAF2EF;  /* Verde Claro Suave */
+    --huilense-gold: #C5A059;        /* Dorado Oro */
+    --huilense-bg: #F4F6F8;          /* Fondo Gris/Crema SaaS */
+    --card-bg: #FFFFFF;
+    --text-main: #2C3E35;
+    --border-color: #E2E8E4;
+}
+
+body.bg-unity-layout {
+    background-color: var(--huilense-bg);
+    color: var(--text-main);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-height: 100vh;
+}
+
+.font-serif { font-family: 'Georgia', serif; }
+.extra-small { font-size: 0.72rem; }
+.tracking-wider { letter-spacing: 0.5px; }
+
+/* HEADER CABECERA VERDE */
+.unity-header {
+    background: linear-gradient(135deg, var(--huilense-green-dark) 0%, var(--huilense-green) 100%);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.bg-white-15 { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); }
+
+.kpi-header-card {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.kpi-header-card:hover {
+    transform: translateY(-3px);
+}
+
+.kpi-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+/* POSICIONAMIENTO DEL CONTENIDO PRINCIPAL */
+.main-content-wrapper {
+    margin-top: -3.5rem;
+    position: relative;
+    z-index: 10;
+}
+
+/* SIDEBAR Y PERFIL DE USUARIO CORREGIDO */
+.unity-sidebar {
+    position: sticky;
+    top: 2rem;
+}
+
+.profile-card-container {
+    width: 100%;
+    overflow: hidden;
+}
+
+.avatar-box {
+    width: 70px;
+    height: 70px;
+    background-color: var(--huilense-green-soft);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-email-text {
+    max-width: 100%;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.unity-link {
+    color: var(--text-main);
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.unity-link:hover, .unity-link.active {
+    background-color: var(--huilense-green);
+    color: #ffffff !important;
+}
+
+/* MARCA Y BOTONES */
+.text-huilense { color: var(--huilense-green) !important; }
+.bg-huilense-soft { background-color: var(--huilense-green-soft) !important; }
+.text-gold { color: var(--huilense-gold) !important; }
+.bg-gold { background-color: var(--huilense-gold) !important; }
+.bg-huilense { background-color: var(--huilense-green) !important; }
+
+.btn-huilense {
+    background-color: var(--huilense-green);
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    border-radius: 10px;
+}
+
+.btn-huilense:hover {
+    background-color: var(--huilense-green-dark);
+    color: #ffffff;
+}
+
+.btn-outline-huilense {
+    color: var(--huilense-green);
+    border-color: var(--huilense-green);
+    font-weight: 600;
+    border-radius: 10px;
+}
+
+.btn-outline-huilense:hover {
+    background-color: var(--huilense-green);
+    color: #ffffff;
+}
+
+.btn-gold {
+    background-color: var(--huilense-gold);
+    color: #000;
+    border-radius: 10px;
+}
+
+.btn-outline-gold {
+    color: var(--huilense-gold);
+    border-color: var(--huilense-gold);
+}
+
+.btn-outline-gold:hover {
+    background-color: var(--huilense-gold);
+    color: #000;
+}
+
+/* ==========================================================================
+   MEDIA QUERIES (ADAPTABILIDAD RESPONSIVE)
+   ========================================================================== */
+
+@media (max-width: 767.98px) {
+    .main-content-wrapper {
+        margin-top: -1.5rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .unity-header {
+        padding-bottom: 2.5rem !important;
+    }
+
+    .kpi-header-card h4 {
+        font-size: 1.1rem;
+    }
+
+    .kpi-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 1rem;
+    }
+
+    .unity-welcome-card {
+        text-align: center;
+        justify-content: center !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .main-content-wrapper {
+        margin-top: -2.5rem;
+    }
+}
+
+@media (min-width: 992px) {
+    .unity-sidebar {
+        min-height: calc(100vh - 120px);
+    }
+}
