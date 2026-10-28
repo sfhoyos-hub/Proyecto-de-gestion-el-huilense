@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { getDB } = require('../../database/initDB');
+const { requireAuth, requireRole } = require('../../middleware/auth.middleware');
+
+// Todas las rutas de domingos: solo ADMIN autenticado.
+router.use(requireAuth, requireRole('ADMIN'));
 
 // Importar la lógica de negocio de las rachas
 const { actualizarRachasAutomatica } = require('../racha/racha.service');
