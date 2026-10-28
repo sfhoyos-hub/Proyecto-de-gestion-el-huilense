@@ -1,10 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const { getDB } = require('../../database/initDB'); // Ajusta la ruta si es necesario
+const { requireAuth } = require('../../middleware/auth.middleware');
+
+router.use(requireAuth);
 
 // Consultar la racha de un mesero (GET) - RF-15
 router.get('/:mesero_id', async (req, res) => {
     const { mesero_id } = req.params;
+
+    // El MESERO solo puede consultar su propia racha
+    if (req.user.rol === 'MESERO' && Number(req.user.mesero_id) !== Number(mesero_id)) {
+        return res.status(403).json({ mensaje: 'Solo puedes consultar tu propia racha' });
+    }
 
     try {
         const db = getDB();

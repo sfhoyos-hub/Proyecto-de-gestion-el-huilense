@@ -1,4 +1,3 @@
-
 const express = require('express');
 const bcrypt = require('bcrypt');
 const { getDB } = require('../../database/initDB');
@@ -150,6 +149,7 @@ router.get('/', requireRole('ADMIN'), async (req, res) => {
                 m.apellido,
                 m.fecha_ingreso,
                 m.estado,
+                u.name,
                 u.email
             FROM meseros m
             INNER JOIN users u ON m.user_id = u.id
