@@ -1,12 +1,11 @@
 /* ==========================================================================
-   El Huilense · Lógica del Panel de Administración (Domingos, Ventas y Rachas)
+   El Huilense · Lógica del Panel de Administración Completo
    ========================================================================== */
 (function () {
   'use strict';
 
   const { Sesion, peticion, CONFIG } = window.Huilense;
 
-  // Verificar sesión y rol de administrador
   const sesionActual = Sesion.leer();
   if (!sesionActual || sesionActual.usuario.rol !== 'ADMIN') {
     window.location.replace(CONFIG.PAGINA_LOGIN + '?motivo=sesion-expirada');
@@ -32,7 +31,51 @@
     `;
   }
 
-  // 1. Registrar Domingo
+  // 1. Cargar listado de Domingos
+  async function cargarDomingos() {
+    const tbody = document.getElementById('tabla-domingos-cuerpo');
+    try {
+      const domingos = await peticion('/domingos', { metodo: 'GET', autenticada: true });
+      if (!domingos || domingos.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted small">No hay domingos registrados.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = domingos.map(d => `
+        <tr>
+          <td><strong>${d.id}</strong></td>
+          <td>${d.fecha}</td>
+          <td><span class="badge bg-success">${d.meseros_requeridos} meseros</span></td>
+        </tr>
+      `).join('');
+    } catch (error) {
+      tbody.innerHTML = `<tr><td colspan="3" class="text-center text-danger small">Error al cargar domingos.</td></tr>`;
+    }
+  }
+
+  // 2. Cargar listado de Meseros
+  async function cargarMeseros() {
+    const tbody = document.getElementById('tabla-meseros-cuerpo');
+    try {
+      const meseros = await peticion('/meseros', { metodo: 'GET', autenticada: true });
+      if (!meseros || meseros.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted small">No hay meseros registrados.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = meseros.map(m => `
+        <tr>
+          <td><strong>${m.id}</strong></td>
+          <td>${m.identificacion}</td>
+          <td>${m.nombre} ${m.apellido}</td>
+          <td>${m.email}</td>
+          <td><span class="badge ${m.estado === 'activo' ? 'bg-success' : 'bg-secondary'}">${m.estado}</span></td>
+        </tr>
+      `).join('');
+    } catch (error) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger small">Error al cargar meseros.</td></tr>`;
+    }
+  }
+
+  // Registrar Domingo
   document.getElementById('form-domingo').addEventListener('submit', async (e) => {
     e.preventDefault();
     const fecha = document.getElementById('fecha-domingo').value;
@@ -42,12 +85,13 @@
       const respuesta = await peticion('/domingos', { metodo: 'POST', cuerpo: { fecha, meseros_requeridos }, autenticada: true });
       mostrarAlerta('exito', respuesta.mensaje || 'Domingo registrado correctamente.');
       e.target.reset();
+      cargarDomingos();
     } catch (error) {
       mostrarAlerta('error', error.message || 'Error al registrar el domingo.');
     }
   });
 
-  // 2. Registrar Venta
+  // Registrar Venta
   document.getElementById('form-venta').addEventListener('submit', async (e) => {
     e.preventDefault();
     const mesero_id = Number(document.getElementById('venta-mesero-id').value);
@@ -63,30 +107,56 @@
     }
   });
 
-  // 3. Cierre de Corte y Rachas
+  // Registrar Mesero
+  document.getElementById('form-mesero').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const cuerpo = {
+      name: document.getElementById('mesero-name').value,
+      email: document.getElementById('mesero-email').value,
+      password: document.getElementById('mesero-password').value,
+      identificacion: document.getElementById('mesero-identificacion').value,
+      nombre: document.getElementById('mesero-nombre').value,
+      apellido: document.getElementById('mesero-apellido').value,
+      fecha_ingreso: document.getElementById('mesero-fecha-ingreso').value
+    };
+
+    try {
+      const respuesta = await peticion('/meseros', { metodo: 'POST', cuerpo, autenticada: true });
+      mostrarAlerta('exito', respuesta.mensaje || 'Mesero registrado correctamente.');
+      e.target.reset();
+      cargarMeseros(); // Recargar la tabla de meseros
+    } catch (error) {
+      mostrarAlerta('error', error.message || 'Error al registrar el mesero.');
+    }
+  });
+
+  // Cierre de Corte y Rachas (Top 6)
   document.getElementById('form-cierre').addEventListener('submit', async (e) => {
     e.preventDefault();
     const domingoId = document.getElementById('cierre-domingo-id').value;
     const contenedorRanking = document.getElementById('resultado-ranking');
+    const listaBadges = document.getElementById('lista-ranking-badges');
 
     try {
       const respuesta = await peticion(`/domingos/${domingoId}/cerrar-corte`, { metodo: 'POST', autenticada: true });
-      mostrarAlerta('exito', respuesta.mensaje || 'Corte dominical cerrado con éxito.');
+      mostrarAlerta('exito', respuesta.mensaje || 'Corte dominical cerrado con éxito y rachas actualizadas.');
       
       if (respuesta.top6 && Array.isArray(respuesta.top6)) {
         contenedorRanking.style.display = 'block';
-        contenedorRanking.innerHTML = `
-          <div class="alert alert-secondary border-success">
-            <h5 class="fw-bold text-success mb-2"><i class="bi bi-award-fill"></i> Resultados del Ranking (Top 6 Meseros):</h5>
-            <p class="mb-1 small">IDs de meseros clasificados:</p>
-            <span class="badge bg-success fs-6">${respuesta.top6.join(', ')}</span>
-          </div>
-        `;
+        listaBadges.innerHTML = respuesta.top6.map((idMesero, index) => `
+          <span class="badge bg-success fs-6 p-2">
+            #${index + 1} - Mesero ID: ${idMesero}
+          </span>
+        `).join('');
       }
     } catch (error) {
       contenedorRanking.style.display = 'none';
       mostrarAlerta('error', error.message || 'Error al realizar el cierre de corte.');
     }
   });
+
+  // Inicializar tablas al cargar la página
+  cargarDomingos();
+  cargarMeseros();
 
 })();
