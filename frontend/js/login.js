@@ -231,7 +231,7 @@
         destinoFoco = campos.email.input;
         return;
       }
-      if (usuario.estado !== 'activo') {
+      if (usuario.estado !== 'ACTIVO') {
         mostrarMensaje('error', 'La cuenta se encuentra inactiva.');
         destinoFoco = campos.email.input;
         return;

@@ -128,7 +128,7 @@
 
       meseros.forEach((m) => {
         meserosMap.set(m.id, `${m.nombre || ''} ${m.apellido || ''}`.trim());
-        if (m.estado === 'activo' || m.estado === undefined) {
+        if (m.estado === 'ACTIVO' || m.estado === undefined) {
           const opcion = document.createElement('option');
           opcion.value = m.id;
           opcion.textContent = `${m.nombre || ''} ${m.apellido || ''} ${m.identificacion ? '(' + m.identificacion + ')' : ''}`;

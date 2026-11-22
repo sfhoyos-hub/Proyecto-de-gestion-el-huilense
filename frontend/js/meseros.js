@@ -54,7 +54,7 @@
 
       // Actualizar KPIs
       document.getElementById('kpi-total-meseros').textContent = meserosGlobales.length;
-      const activos = meserosGlobales.filter(m => m.estado !== 'inactivo').length;
+      const activos = meserosGlobales.filter(m => m.estado !== 'INACTIVO').length;
       document.getElementById('kpi-activos-meseros').textContent = activos;
 
       renderizarTabla(meserosGlobales);
@@ -79,7 +79,7 @@
         <td class="text-muted small">${m.email || '-'}</td>
         <td>${m.fecha_ingreso || '-'}</td>
         <td>
-          <span class="badge ${m.estado === 'inactivo' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'} rounded-pill px-2 py-1">
+          <span class="badge ${m.estado === 'INACTIVO' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'} rounded-pill px-2 py-1">
             ${m.estado || 'Activo'}
           </span>
         </td>
@@ -87,8 +87,8 @@
           <button class="btn btn-sm btn-outline-huilense me-1 btn-editar-mesero" data-id="${m.id}" title="Editar">
             <i class="bi bi-pencil-square"></i>
           </button>
-          <button class="btn btn-sm ${m.estado === 'inactivo' ? 'btn-outline-success' : 'btn-outline-danger'} btn-toggle-estado" data-id="${m.id}" data-estado="${m.estado || 'activo'}" title="Cambiar Estado">
-            <i class="bi ${m.estado === 'inactivo' ? 'bi-person-check' : 'bi-person-x'}"></i>
+          <button class="btn btn-sm ${m.estado === 'INACTIVO' ? 'btn-outline-success' : 'btn-outline-danger'} btn-toggle-estado" data-id="${m.id}" data-estado="${m.estado || 'ACTIVO'}" title="Cambiar Estado">
+            <i class="bi ${m.estado === 'INACTIVO' ? 'bi-person-check' : 'bi-person-x'}"></i>
           </button>
         </td>
       </tr>
@@ -114,7 +114,7 @@
       btn.addEventListener('click', async (e) => {
         const id = e.currentTarget.dataset.id;
         const estadoActual = e.currentTarget.dataset.estado;
-        const nuevoEstado = estadoActual === 'inactivo' ? 'activo' : 'inactivo';
+        const nuevoEstado = estadoActual === 'INACTIVO' ? 'ACTIVO' : 'INACTIVO';
         const m = meserosGlobales.find(x => x.id === Number(id));
 
         try {
