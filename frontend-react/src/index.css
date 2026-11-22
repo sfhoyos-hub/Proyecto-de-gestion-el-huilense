@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+/* Colores de marca de El Huilense (mismos del panel anterior) */
+@theme {
+  --color-huilense-50: #EAF2EF;
+  --color-huilense-100: #D3E5DD;
+  --color-huilense-600: #0F4C3A;
+  --color-huilense-700: #0C4232;
+  --color-huilense-800: #0A3629;
+  --color-oro: #C5A059;
+  --color-fondo: #F4F6F8;
+  --color-texto: #2C3E35;
+  --color-borde: #E2E8E4;
+  --font-serif: Georgia, Cambria, "Times New Roman", serif;
+}
+
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animar-aparicion {
+  animation: aparecer 160ms ease-out;
+}
