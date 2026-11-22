@@ -1,0 +1,228 @@
+/* ==========================================================================
+   El Huilense · Estilos del módulo de alertas (css/alertas.css)
+   Modal <dialog> centrado + toasts de éxito. Sin dependencia de Bootstrap.
+   ========================================================================== */
+
+.alerta,
+.alertas-toasts {
+  --alerta-verde: #0F4C3A;
+  --alerta-dorado: #C5A059;
+  --alerta-rojo: #C0392B;
+  --alerta-azul: #2471A3;
+}
+
+/* ---------- Ventana modal ---------- */
+.alerta {
+  --alerta-color: var(--alerta-azul);   /* círculo del icono */
+  --alerta-glifo: #fff;                 /* símbolo dentro del círculo */
+  --alerta-titulo: var(--alerta-azul);  /* color del título (legible sobre blanco) */
+  box-sizing: border-box;
+  width: min(92vw, 420px);
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow-y: auto;
+  padding: 2rem 1.5rem 1.5rem;
+  border: 0;
+  border-radius: 1.25rem;
+  background: #fffdf8;
+  color: #1f2a25;
+  font-family: inherit;
+  text-align: center;
+  box-shadow: 0 28px 70px rgb(0 0 0 / 0.4), 0 6px 16px rgb(0 0 0 / 0.22);
+}
+
+.alerta[data-tipo="error"] {
+  --alerta-color: var(--alerta-rojo);
+  --alerta-titulo: var(--alerta-rojo);
+}
+
+.alerta[data-tipo="advertencia"] {
+  --alerta-color: var(--alerta-dorado);
+  --alerta-glifo: var(--alerta-verde);
+  --alerta-titulo: #8A6A22;
+}
+
+.alerta[data-tipo="confirmar"] {
+  --alerta-color: var(--alerta-verde);
+  --alerta-titulo: var(--alerta-verde);
+}
+
+.alerta::backdrop {
+  background: rgb(8 24 18 / 0.6);
+  backdrop-filter: blur(3px);
+}
+
+.alerta[open] {
+  animation: alerta-entrada 180ms ease-out;
+}
+
+@keyframes alerta-entrada {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+.alerta__icono {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background: var(--alerta-color);
+  color: var(--alerta-glifo);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.alerta__titulo {
+  margin: 0 0 0.5rem;
+  color: var(--alerta-titulo);
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.alerta__texto {
+  margin: 0 0 1.5rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.alerta__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.alerta__boton {
+  min-width: 7.5rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.25rem;
+  border: 2px solid var(--alerta-verde);
+  border-radius: 0.75rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.alerta__boton[hidden] {
+  display: none;
+}
+
+.alerta__boton--primario {
+  background: var(--alerta-verde);
+  color: #fff;
+}
+
+.alerta__boton--primario:hover {
+  background: #0b3a2c;
+}
+
+.alerta__boton--secundario {
+  background: transparent;
+  color: var(--alerta-verde);
+}
+
+.alerta__boton--secundario:hover {
+  background: rgb(15 76 58 / 0.08);
+}
+
+.alerta__boton:focus-visible {
+  outline: 3px solid var(--alerta-dorado);
+  outline-offset: 2px;
+}
+
+/* ---------- Toast de éxito ---------- */
+.alertas-toasts {
+  position: fixed;
+  top: 1rem;
+  top: max(1rem, env(safe-area-inset-top));
+  right: 1rem;
+  z-index: 2100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: min(calc(100vw - 2rem), 360px);
+  pointer-events: none;
+}
+
+.toast-alerta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: var(--alerta-verde);
+  color: #fff;
+  font: inherit;
+  font-size: 0.95rem;
+  text-align: left;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.28);
+  cursor: pointer;
+  pointer-events: auto;
+  animation: toast-entrada 220ms ease-out;
+}
+
+.toast-alerta:focus-visible {
+  outline: 3px solid var(--alerta-dorado);
+  outline-offset: 2px;
+}
+
+.toast-alerta__icono {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1.5px solid var(--alerta-dorado);
+  border-radius: 50%;
+  background: rgb(197 160 89 / 0.15);
+  color: var(--alerta-dorado);
+  font-weight: 700;
+}
+
+.toast-alerta__texto {
+  overflow-wrap: anywhere;
+}
+
+.toast-alerta--saliendo {
+  opacity: 0;
+  transform: translateX(14px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+@keyframes toast-entrada {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- Móvil ---------- */
+@media (max-width: 420px) {
+  .alerta {
+    padding: 1.5rem 1.25rem 1.25rem;
+  }
+
+  .alerta__boton {
+    flex: 1 1 100%;
+  }
+}
+
+/* ---------- Movimiento reducido ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .alerta[open],
+  .toast-alerta {
+    animation: none;
+  }
+
+  .alerta__boton,
+  .toast-alerta--saliendo {
+    transition: none;
+  }
+}

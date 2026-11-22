@@ -6,10 +6,10 @@
   'use strict';
 
   const { CONFIG, Sesion, ApiError, peticion } = window.Huilense;
+  const { Alertas } = window.Huilense;
 
   /* ---------- Referencias al DOM ---------- */
   const formulario = document.querySelector('#form-login');
-  const zonaMensajes = document.querySelector('#zona-mensajes');
   const botonEntrar = document.querySelector('#btn-entrar');
   const textoBoton = botonEntrar.querySelector('.boton__texto');
   const estadoCarga = document.querySelector('#estado-carga');
@@ -86,37 +86,6 @@
     return primerInvalido;
   }
 
-  /* ---------- Mensajes globales (región aria-live) ---------- */
-  function limpiarMensajes() {
-    zonaMensajes.replaceChildren();
-  }
-
-  function mostrarMensaje(tipo, texto, accion) {
-    const iconos = {
-      error: 'bi-exclamation-triangle-fill',
-      info: 'bi-info-circle-fill',
-      exito: 'bi-check-circle-fill'
-    };
-
-    const caja = document.createElement('div');
-    caja.className = 'alert mensaje mensaje--' + tipo + ' d-flex align-items-start gap-2';
-
-    const cuerpo = document.createElement('div');
-    cuerpo.append(crearTexto(texto));
-
-    if (accion) {
-      const boton = document.createElement('button');
-      boton.type = 'button';
-      boton.className = 'mensaje__accion d-block mt-1';
-      boton.textContent = accion.texto;
-      boton.addEventListener('click', accion.alHacerClic);
-      cuerpo.append(boton);
-    }
-
-    caja.append(crearIcono(iconos[tipo]), cuerpo);
-    zonaMensajes.replaceChildren(caja);
-  }
-
   /* ---------- Estado de carga ---------- */
   function establecerCargando(activo) {
     cargando = activo;
@@ -172,91 +141,77 @@
   }
 
   /* ---------- Resultado del acceso ---------- */
-  function mostrarSesionActiva(usuario) {
-    mostrarMensaje(
-      'exito',
-      'Acceso verificado: ' + usuario.name + ' (administrador). ' +
-        'El panel de administración todavía no está habilitado en esta versión.',
-      {
-        texto: 'Cerrar sesión',
-        alHacerClic() {
-          Sesion.limpiar();
-          limpiarMensajes();
-          campos.email.input.focus();
-        }
-      }
-    );
+  const MENSAJE_ALMACENAMIENTO = 'El navegador bloqueó el almacenamiento de la sesión. ' +
+    'Revisa la configuración de privacidad e inténtalo de nuevo.';
+
+  function destinoPorRol(rol) {
+    return rol === 'MESERO' ? CONFIG.PAGINA_MESERO : CONFIG.PAGINA_PANEL;
   }
 
   function completarAcceso(usuario) {
-    if (CONFIG.PANEL_DISPONIBLE) {
-      window.location.assign(usuario.rol === 'MESERO' ? CONFIG.PAGINA_MESERO : CONFIG.PAGINA_PANEL);
-      return;
+    window.location.assign(destinoPorRol(usuario.rol));
+  }
+
+  // Muestra el error, libera el formulario y, al cerrar la ventana, enfoca el campo indicado.
+  async function rechazar(texto, campo) {
+    establecerCargando(false);
+    await Alertas.error(texto);
+    if (campo) campo.focus();
+  }
+
+  // Devuelve el motivo por el que la cuenta no puede entrar ('' si puede).
+  function motivoDeRechazo(usuario) {
+    if (usuario.rol !== 'ADMIN' && usuario.rol !== 'MESERO') {
+      return 'Esta cuenta no tiene un rol con acceso al sistema.';
     }
-    mostrarSesionActiva(usuario);
+    return usuario.estado === 'ACTIVO' ? '' : 'La cuenta se encuentra inactiva.';
+  }
+
+  function guardarSesion(token, usuario) {
+    try {
+      Sesion.guardar(token, usuario);
+      return true;
+    } catch (errorAlmacenamiento) {
+      return false;
+    }
   }
 
   /* ---------- Envío del formulario ---------- */
+  async function autenticar() {
+    const cuerpo = { email: campos.email.input.value.trim(), password: campos.password.input.value };
+    const datos = await peticion('/login', { metodo: 'POST', cuerpo, autenticada: false });
+    const { token, usuario } = extraerSesion(datos);
+    campos.password.input.value = ''; // la contraseña ya no se necesita
+    const rechazo = motivoDeRechazo(usuario); // el token se descarta sin guardarlo
+    if (rechazo) return rechazar(rechazo, campos.email.input);
+    if (!guardarSesion(token, usuario)) return rechazar(MENSAJE_ALMACENAMIENTO, null);
+    completarAcceso(usuario);
+  }
+
+  async function manejarFalloLogin(error) {
+    // Solo se registra el tipo de fallo: nunca el cuerpo de la petición ni la contraseña.
+    console.error('Falló el inicio de sesión:', error.tipo || error.name);
+    const credencialesMalas = error instanceof ApiError && error.estado === 401;
+    if (credencialesMalas) campos.password.input.value = '';
+    await rechazar(textoDeError(error), credencialesMalas ? campos.password.input : null);
+  }
+
   async function manejarEnvio(evento) {
     evento.preventDefault(); // la petición se hace con fetch, sin recargar la página
     if (cargando) return;
-
-    limpiarMensajes();
     const primerInvalido = validarFormulario();
     if (primerInvalido) {
       primerInvalido.focus();
       return;
     }
-
-    const email = campos.email.input.value.trim();
-    const password = campos.password.input.value;
-    let destinoFoco = null;
-
     establecerCargando(true);
     ocultarPassword();
-
     try {
-      const datos = await peticion('/login', {
-        metodo: 'POST',
-        cuerpo: { email, password },
-        autenticada: false
-      });
-
-      const { token, usuario } = extraerSesion(datos);
-      campos.password.input.value = ''; // la contraseña ya no se necesita
-
-      // Se admiten ADMIN y MESERO; en otro caso el token se descarta sin guardarlo.
-      if (usuario.rol !== 'ADMIN' && usuario.rol !== 'MESERO') {
-        mostrarMensaje('error', 'Esta cuenta no tiene un rol con acceso al sistema.');
-        destinoFoco = campos.email.input;
-        return;
-      }
-      if (usuario.estado !== 'activo') {
-        mostrarMensaje('error', 'La cuenta se encuentra inactiva.');
-        destinoFoco = campos.email.input;
-        return;
-      }
-
-      try {
-        Sesion.guardar(token, usuario);
-      } catch (errorAlmacenamiento) {
-        mostrarMensaje('error', 'El navegador bloqueó el almacenamiento de la sesión. Revisa la configuración de privacidad e inténtalo de nuevo.');
-        return;
-      }
-
-      completarAcceso(usuario);
+      await autenticar();
     } catch (error) {
-      // Solo se registra el tipo de fallo: nunca el cuerpo de la petición ni la contraseña.
-      console.error('Falló el inicio de sesión:', error.tipo || error.name);
-      mostrarMensaje('error', textoDeError(error));
-
-      if (error instanceof ApiError && error.estado === 401) {
-        campos.password.input.value = '';
-        destinoFoco = campos.password.input;
-      }
+      await manejarFalloLogin(error);
     } finally {
       establecerCargando(false);
-      if (destinoFoco) destinoFoco.focus();
     }
   }
 
@@ -276,11 +231,7 @@
     ['sesion-cerrada', 'Cerraste la sesión correctamente.']
   ]);
 
-  function iniciar() {
-    // Eventos del formulario
-    formulario.addEventListener('submit', manejarEnvio);
-    botonOjo.addEventListener('click', alternarPassword);
-
+  function vincularValidacionCampos() {
     document.querySelectorAll('.campo__input').forEach((input) => {
       // Al escribir: si el campo tenía error, se revalida para quitarlo en cuanto se corrige
       input.addEventListener('input', () => {
@@ -295,8 +246,9 @@
         }
       });
     });
+  }
 
-    // Eventos de la ayuda
+  function vincularAyuda() {
     botonAyuda.addEventListener('click', () => alternarAyuda());
     botonCerrarAyuda.addEventListener('click', () => {
       alternarAyuda(false);
@@ -311,20 +263,26 @@
     document.addEventListener('click', (evento) => {
       if (!evento.target.closest('.ayuda')) alternarAyuda(false);
     });
+  }
 
-    // Sesión previa o motivo de redirección
+  // Sesión previa válida: redirige. Si no, avisa del motivo de la redirección (si lo hay).
+  function atenderSesionPrevia() {
     const sesion = Sesion.leer();
     if (sesion && (sesion.usuario.rol === 'ADMIN' || sesion.usuario.rol === 'MESERO')) {
-      if (CONFIG.PANEL_DISPONIBLE) {
-        window.location.replace(sesion.usuario.rol === 'MESERO' ? CONFIG.PAGINA_MESERO : CONFIG.PAGINA_PANEL);
-        return;
-      }
-      mostrarSesionActiva(sesion.usuario);
-    } else {
-      if (sesion) Sesion.limpiar(); // sesión de un rol no permitido
-      const motivo = MOTIVOS.get(new URLSearchParams(window.location.search).get('motivo'));
-      if (motivo) mostrarMensaje('info', motivo);
+      window.location.replace(destinoPorRol(sesion.usuario.rol));
+      return;
     }
+    if (sesion) Sesion.limpiar(); // sesión de un rol no permitido
+    const motivo = MOTIVOS.get(new URLSearchParams(window.location.search).get('motivo'));
+    if (motivo) Alertas.info(motivo);
+  }
+
+  function iniciar() {
+    formulario.addEventListener('submit', manejarEnvio);
+    botonOjo.addEventListener('click', alternarPassword);
+    vincularValidacionCampos();
+    vincularAyuda();
+    atenderSesionPrevia();
   }
 
   iniciar();

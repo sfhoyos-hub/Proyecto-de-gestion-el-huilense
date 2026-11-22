@@ -130,32 +130,6 @@ h3 {
   cursor: progress;
 }
 
-/* ---------- Mensajes (alertas de Bootstrap con colores de marca) ---------- */
-.mensaje {
-  --bs-alert-border-radius: var(--hl-radio);
-  --bs-alert-padding-y: 0.75rem;
-  margin-bottom: 0;
-  font-size: 0.925rem;
-}
-
-.mensaje--error {
-  --bs-alert-color: #7a1f1f;
-  --bs-alert-bg: var(--hl-rojo-fondo);
-  --bs-alert-border-color: #e3b4b4;
-}
-
-.mensaje--info {
-  --bs-alert-color: var(--hl-verde-900);
-  --bs-alert-bg: #eef3ea;
-  --bs-alert-border-color: #c5d6c3;
-}
-
-.mensaje--exito {
-  --bs-alert-color: #0d3a28;
-  --bs-alert-bg: #e3f1e8;
-  --bs-alert-border-color: #a9d1b8;
-}
-
 /* ---------- Movimiento reducido ---------- */
 @media (prefers-reduced-motion: reduce) {
   *,

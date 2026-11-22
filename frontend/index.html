@@ -20,6 +20,7 @@
   <!-- Estilos propios: van después de Bootstrap para poder ajustarlo -->
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/login.css">
+  <link rel="stylesheet" href="css/alertas.css">
 </head>
 
 <body>
@@ -47,9 +48,6 @@
       <section class="tarjeta" aria-labelledby="titulo-login">
         <h2 id="titulo-login">Iniciar sesión</h2>
         <p>Bienvenido. Ingresa con tu cuenta.</p>
-
-        <!-- Región en vivo: los mensajes se insertan aquí desde JavaScript -->
-        <div id="zona-mensajes" aria-live="assertive" aria-atomic="true"></div>
 
         <form id="form-login" novalidate>
           <div class="campo">
@@ -121,6 +119,7 @@
 
   <!-- Scripts propios (clásicos, sin módulos, para que funcionen también sin servidor) -->
   <script src="js/api.js"></script>
+  <script src="js/ui/alertas.js"></script>
   <script src="js/login.js"></script>
 </body>
 </html>

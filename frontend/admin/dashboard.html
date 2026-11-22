@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Panel de Administración | El Huilense</title>
+
+    <!-- Bootstrap 5.3 CSS e Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Georgia:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS Personalizado -->
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/alertas.css">
+</head>
+<body class="bg-unity-layout">
+
+    <!-- Header y menú lateral: los pinta js/ui/layout.js -->
+    <header id="layout-cabecera">
+        <!-- KPIS EN EL HEADER -->
+        <div class="row g-3 mt-3">
+            <div class="col-6 col-md-3">
+                <div class="kpi-header-card p-3 rounded-4 bg-white-15">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-white-50 d-block fw-semibold text-uppercase">Próximo Domingo</small>
+                            <h4 class="fw-bold text-white mb-0" id="kpi-fecha-domingo">--/--/----</h4>
+                        </div>
+                        <div class="kpi-icon bg-gold text-dark"><i class="bi bi-calendar-event-fill"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="kpi-header-card p-3 rounded-4 bg-white-15">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-white-50 d-block fw-semibold text-uppercase">Meseros Req.</small>
+                            <h4 class="fw-bold text-white mb-0" id="kpi-meseros-count">0</h4>
+                        </div>
+                        <div class="kpi-icon bg-white text-huilense"><i class="bi bi-people-fill"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="kpi-header-card p-3 rounded-4 bg-white-15">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-white-50 d-block fw-semibold text-uppercase">Ventas del Domingo</small>
+                            <h4 class="fw-bold text-gold mb-0" id="kpi-total-ventas">$0</h4>
+                        </div>
+                        <div class="kpi-icon bg-white text-success"><i class="bi bi-cash-stack"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="kpi-header-card p-3 rounded-4 bg-white-15">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-white-50 d-block fw-semibold text-uppercase">Clasificación</small>
+                            <h4 class="fw-bold text-white mb-0">Top 6</h4>
+                        </div>
+                        <div class="kpi-icon bg-gold text-dark"><i class="bi bi-trophy-fill"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid px-4 main-content-wrapper">
+        <div class="row g-4">
+
+            <aside id="layout-sidebar"></aside>
+
+            <main class="col-lg-9 col-xl-10">
+                <!-- BANNER DE BIENVENIDA -->
+                <div class="unity-welcome-card bg-white p-4 rounded-4 shadow-sm border-0 mb-4">
+                    <h3 class="font-serif fw-bold text-huilense mb-1">¡Bienvenido de nuevo, Admin! 👋</h3>
+                    <p class="text-muted mb-0 small">Aquí tienes el resumen operativo de las jornadas dominicales, ventas y bonificaciones. Elige a dónde quieres ir.</p>
+                </div>
+
+                <!-- TARJETAS DE NAVEGACIÓN -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6 col-xl-4">
+                        <div class="tarjeta-modulo bg-white p-4 rounded-4 shadow-sm h-100 d-flex flex-column">
+                            <div class="tarjeta-modulo-icono mb-3"><i class="bi bi-people-fill"></i></div>
+                            <h5 class="font-serif fw-bold text-huilense mb-1">Meseros</h5>
+                            <p class="text-muted small flex-grow-1">Administra cuentas, cédulas y el estado del personal.</p>
+                            <a href="meseros.html" class="btn btn-huilense align-self-start px-3">Gestionar meseros <i class="bi bi-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <div class="tarjeta-modulo bg-white p-4 rounded-4 shadow-sm h-100 d-flex flex-column">
+                            <div class="tarjeta-modulo-icono mb-3"><i class="bi bi-calendar3"></i></div>
+                            <h5 class="font-serif fw-bold text-huilense mb-1">Domingos y cierre</h5>
+                            <p class="text-muted small flex-grow-1">Programa las jornadas dominicales y cierra el corte para obtener el Top 6.</p>
+                            <a href="domingos.html" class="btn btn-huilense align-self-start px-3">Ir a domingos <i class="bi bi-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <div class="tarjeta-modulo bg-white p-4 rounded-4 shadow-sm h-100 d-flex flex-column">
+                            <div class="tarjeta-modulo-icono mb-3"><i class="bi bi-receipt"></i></div>
+                            <h5 class="font-serif fw-bold text-huilense mb-1">Ventas</h5>
+                            <p class="text-muted small flex-grow-1">Registra y consulta las ventas de cada mesero por domingo.</p>
+                            <a href="ventas.html" class="btn btn-huilense align-self-start px-3">Ver ventas <i class="bi bi-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <div class="tarjeta-modulo bg-white p-4 rounded-4 shadow-sm h-100 d-flex flex-column">
+                            <div class="tarjeta-modulo-icono mb-3"><i class="bi bi-trophy-fill"></i></div>
+                            <h5 class="font-serif fw-bold text-huilense mb-1">Ranking</h5>
+                            <p class="text-muted small flex-grow-1">Consulta el ranking de ventas y los clasificados al Top 6.</p>
+                            <a href="ranking.html" class="btn btn-huilense align-self-start px-3">Consultar ranking <i class="bi bi-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <div class="tarjeta-modulo bg-white p-4 rounded-4 shadow-sm h-100 d-flex flex-column">
+                            <div class="tarjeta-modulo-icono mb-3"><i class="bi bi-cash-coin"></i></div>
+                            <h5 class="font-serif fw-bold text-huilense mb-1">Bonificaciones</h5>
+                            <p class="text-muted small flex-grow-1">Genera y consulta las bonificaciones de cada domingo.</p>
+                            <a href="bonificaciones.html" class="btn btn-huilense align-self-start px-3">Ver bonificaciones <i class="bi bi-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/ui/alertas.js"></script>
+    <script src="../js/ui/dom.js"></script>
+    <script src="../js/ui/layout.js"></script>
+    <script src="../js/paginas/dashboard.js"></script>
+</body>
+</html>
