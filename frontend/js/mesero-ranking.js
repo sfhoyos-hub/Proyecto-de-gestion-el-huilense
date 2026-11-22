@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const { Alertas } = window.Huilense;
+
   // Verificación de acceso
   const rol = window.Huilense.getRol();
   if (!rol || rol !== 'MESERO') {
@@ -12,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnBuscar = document.getElementById('btn-buscar');
   const btnCerrarSesion = document.getElementById('btn-cerrar-sesion');
   const contenedorResultado = document.getElementById('resultado-ranking');
-  const mensajeEstado = document.getElementById('mensaje-estado');
 
   const resPosicion = document.getElementById('res-posicion');
   const resBadgeTop = document.getElementById('res-badge-top');
@@ -26,46 +27,43 @@ document.addEventListener('DOMContentLoaded', () => {
     window.Huilense.cerrarSesion();
   });
 
-  btnBuscar.addEventListener('click', async () => {
-    ocultarMensajes();
-    const fecha = inputFecha.value;
+  function pintarResultado(data) {
+    resPosicion.textContent = `#${data.posicion}`;
+    resTotal.textContent = new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      maximumFractionDigits: 0
+    }).format(data.total_vendido || 0);
 
-    if (!fecha) {
-      mostrarMensaje('Por favor seleccione una fecha válida.', 'error');
+    const esTop = data.top6 === 1;
+    resBadgeTop.textContent = esTop ? 'Pertenece al Top 6' : 'Fuera del Top 6';
+    resBadgeTop.className = esTop ? 'badge badge--top-si' : 'badge badge--top-no';
+    contenedorResultado.style.display = 'grid';
+  }
+
+  function manejarErrorConsulta(error) {
+    contenedorResultado.style.display = 'none';
+    if (error.status === 404) {
+      Alertas.info(error.message || 'No hay puesto registrado para la fecha seleccionada.');
       return;
     }
+    Alertas.deError(error);
+  }
 
-    try {
-      const data = await window.Huilense.obtenerRankingMiPuesto(fecha);
-
-      resPosicion.textContent = `#${data.posicion}`;
-      resTotal.textContent = new Intl.NumberFormat('es-CO', {
-        style: 'currency',
-        currency: 'COP',
-        maximumFractionDigits: 0
-      }).format(data.total_vendido || 0);
-
-      if (data.top6 === 1) {
-        resBadgeTop.textContent = 'Pertenece al Top 6';
-        resBadgeTop.className = 'badge badge--top-si';
-      } else {
-        resBadgeTop.textContent = 'Fuera del Top 6';
-        resBadgeTop.className = 'badge badge--top-no';
-      }
-
-      contenedorResultado.style.display = 'grid';
-    } catch (error) {
-      contenedorResultado.style.display = 'none';
-
-      if (error.status === 404) {
-        mostrarMensaje(error.message || 'No hay puesto registrado para la fecha seleccionada.', 'info');
-      } else if (error.status === 400) {
-        mostrarMensaje(error.message || 'Formato de fecha no válido.', 'error');
-      } else {
-        mostrarMensaje(error.message || 'Error de conexión con el servidor.', 'error');
-      }
+  async function consultarPuesto() {
+    const fecha = inputFecha.value;
+    if (!fecha) {
+      Alertas.advertencia('Por favor seleccione una fecha válida.');
+      return;
     }
-  });
+    try {
+      pintarResultado(await window.Huilense.obtenerRankingMiPuesto(fecha));
+    } catch (error) {
+      manejarErrorConsulta(error);
+    }
+  }
+
+  btnBuscar.addEventListener('click', consultarPuesto);
 
   async function cargarDatosPerfil() {
     try {
@@ -84,16 +82,5 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.error('Error al cargar perfil:', e);
     }
-  }
-
-  function mostrarMensaje(texto, tipo) {
-    mensajeEstado.textContent = texto;
-    mensajeEstado.className = `mensaje ${tipo === 'error' ? 'mensaje--error' : 'mensaje--info'}`;
-    mensajeEstado.style.display = 'block';
-  }
-
-  function ocultarMensajes() {
-    mensajeEstado.style.display = 'none';
-    mensajeEstado.textContent = '';
   }
 });
