@@ -1,10 +1,11 @@
 
 require('dotenv').config();
 
-const bcrypt = require('bcrypt');
-const { initDB } = require('../database/initDB');
+const { hashearPassword } = require('../utils/passwords');
+const { initDB } = require('../infraestructura/persistencia/initDB');
 const readline = require('readline');
 const crypto = require('crypto');
+const { ESTADO_USUARIO } = require('../utils/estados');
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -55,12 +56,12 @@ async function main() {
             );
         }
 
-        const hash = await bcrypt.hash(password, 12);
+        const hash = await hashearPassword(password);
 
         await db.run(
             `INSERT INTO users (name, email, password, rol, estado)
-             VALUES (?, ?, ?, 'ADMIN', 'activo')`,
-            [name, email, hash]
+             VALUES (?, ?, ?, 'ADMIN', ?)`,
+            [name, email, hash, ESTADO_USUARIO.ACTIVO]
         );
 
         console.log('Administrador creado correctamente.');
