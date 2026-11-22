@@ -4,6 +4,7 @@ import RutaProtegida from './components/layout/RutaProtegida';
 import { AlertasProvider } from './context/AlertasContext';
 import { AuthProvider } from './context/AuthContext';
 import DashboardPage from './pages/DashboardPage';
+import DomingosPage from './pages/DomingosPage';
 import LoginPage from './pages/LoginPage';
 import MeserosPage from './pages/MeserosPage';
 
@@ -19,6 +20,7 @@ export default function App() {
               <Route element={<Layout />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/meseros" element={<MeserosPage />} />
+                <Route path="/domingos" element={<DomingosPage />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
