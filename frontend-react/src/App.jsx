@@ -5,6 +5,7 @@ import { AlertasProvider } from './context/AlertasContext';
 import { AuthProvider } from './context/AuthContext';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
+import MeserosPage from './pages/MeserosPage';
 
 // Contextos globales (alertas y sesión) envuelven a todas las pantallas.
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
             <Route element={<RutaProtegida />}>
               <Route element={<Layout />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/meseros" element={<MeserosPage />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
