@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage';
 import DomingosPage from './pages/DomingosPage';
 import LoginPage from './pages/LoginPage';
 import MeserosPage from './pages/MeserosPage';
+import VentasPage from './pages/VentasPage';
 
 // Contextos globales (alertas y sesión) envuelven a todas las pantallas.
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/meseros" element={<MeserosPage />} />
                 <Route path="/domingos" element={<DomingosPage />} />
+                <Route path="/ventas" element={<VentasPage />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
