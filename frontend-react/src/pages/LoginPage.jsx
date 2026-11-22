@@ -42,6 +42,10 @@ export default function LoginPage() {
   const entrar = async (evento) => {
     evento.preventDefault();
     const problemas = validar();
+    if (!valores.email.trim() || !valores.password) {
+      advertencia('Todos los campos son requeridos.', { titulo: 'Faltan datos' });
+      return;
+    }
     if (problemas.length > 0) {
       advertencia(problemas, { titulo: 'Revisa los datos de acceso' });
       return;
@@ -53,7 +57,7 @@ export default function LoginPage() {
       if (usuario.rol === 'ADMIN') navegar('/dashboard', { replace: true });
       else window.location.assign(PAGINA_MESERO);
     } catch (problema) {
-      error(problema.estado === 401 ? 'El correo o la contraseña no son correctos.' : problema, { titulo: 'No pudiste ingresar' });
+      error(problema.estado === 401 ? 'Usuario o contraseña incorrectos.' : problema, { titulo: 'No pudiste ingresar' });
     } finally {
       setEnviando(false);
     }

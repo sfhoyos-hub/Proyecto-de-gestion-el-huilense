@@ -19,8 +19,8 @@ export default function FormularioVenta({ abierto, venta, domingos, meseros, fec
   const [guardando, setGuardando] = useState(false);
 
   const reglasVenta = useMemo(() => ({
-    fecha: [reglas.obligatorio('El domingo')],
-    mesero_id: [reglas.obligatorio('El mesero')],
+    fecha: [reglas.seleccion('El domingo')],
+    mesero_id: [reglas.seleccion('El mesero')],
     total_vendido: [reglas.montoValido('El total vendido')]
   }), []);
   const { valores, errores, cambiar, validar, reiniciar } = useFormulario(VACIO, reglasVenta);
@@ -50,6 +50,7 @@ export default function FormularioVenta({ abierto, venta, domingos, meseros, fec
     setGuardando(true);
     try {
       const respuesta = await onGuardar(valores);
+      if (respuesta === null) return; // el usuario decidió no continuar: el formulario sigue abierto
       onCerrar();
       exito(respuesta?.mensaje || 'Venta guardada correctamente.');
     } catch (problema) {

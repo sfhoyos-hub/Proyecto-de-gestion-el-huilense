@@ -23,7 +23,9 @@ export function esDomingo(fecha) {
 // Reglas reutilizables para useFormulario: cada una devuelve un mensaje o ''.
 export const reglas = {
   obligatorio: (etiqueta) => (valor) =>
-    String(valor ?? '').trim() ? '' : `${etiqueta} es obligatorio.`,
+    String(valor ?? '').trim() ? '' : `Completa ${etiqueta.charAt(0).toLowerCase()}${etiqueta.slice(1)}.`,
+  seleccion: (etiqueta) => (valor) =>
+    String(valor ?? '').trim() ? '' : `Selecciona ${etiqueta.charAt(0).toLowerCase()}${etiqueta.slice(1)}.`,
   minimo: (etiqueta, cantidad) => (valor) =>
     String(valor ?? '').trim().length >= cantidad ? '' : `${etiqueta} debe tener al menos ${cantidad} caracteres.`,
   correo: () => (valor) =>

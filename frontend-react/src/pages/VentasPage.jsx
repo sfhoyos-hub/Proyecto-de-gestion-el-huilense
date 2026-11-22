@@ -11,12 +11,13 @@ import useAlertas from '../hooks/useAlertas';
 import useDomingos from '../hooks/useDomingos';
 import useMeseros from '../hooks/useMeseros';
 import useVentas from '../hooks/useVentas';
+import { comoLista, peticion } from '../api/cliente';
 import { formatearFechaLarga, formatearPesos, nombreCompleto } from '../utils/formato';
 
 export default function VentasPage() {
   const { domingos, abiertos } = useDomingos();
   const { activos } = useMeseros();
-  const { advertencia } = useAlertas();
+  const { advertencia, confirmar } = useAlertas();
   const [fecha, setFecha] = useState('');
   const { ventas, total, cargando, error: errorCarga, registrar, editar } = useVentas(fecha);
   const [formulario, setFormulario] = useState({ abierto: false, venta: null });
@@ -41,9 +42,28 @@ export default function VentasPage() {
     setFormulario({ abierto: true, venta: null });
   };
 
+  // HU 02.1, escenario 2: si el mesero ya tiene venta ese domingo, se ofrece editarla en vez de duplicarla.
+  const registrarOEditar = async (datos) => {
+    try {
+      return await registrar(datos);
+    } catch (problema) {
+      if (problema.estado !== 409 || !/ya existe una venta/i.test(problema.message)) throw problema;
+
+      const existentes = comoLista(await peticion(`/ventas?fecha=${encodeURIComponent(datos.fecha)}`));
+      const existente = existentes.find((v) => Number(v.mesero_id) === Number(datos.mesero_id));
+      if (!existente) throw problema;
+
+      const acepta = await confirmar([
+        `${nombreCompleto(existente)} ya tiene una venta de ${formatearPesos(existente.total_vendido)} ese domingo.`,
+        `¿Quieres cambiarla por ${formatearPesos(datos.total_vendido)}?`
+      ], { titulo: 'Esta venta ya existe', textoConfirmar: 'Editar venta' });
+      return acepta ? editar(existente.id, datos) : null;
+    }
+  };
+
   const guardar = async (datos) => {
-    const respuesta = formulario.venta ? await editar(formulario.venta.id, datos) : await registrar(datos);
-    if (datos.fecha !== fecha) setFecha(datos.fecha);
+    const respuesta = formulario.venta ? await editar(formulario.venta.id, datos) : await registrarOEditar(datos);
+    if (respuesta && datos.fecha !== fecha) setFecha(datos.fecha);
     return respuesta;
   };
 
