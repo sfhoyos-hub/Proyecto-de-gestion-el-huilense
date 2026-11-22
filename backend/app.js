@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
 const path = require('path'); // 1. Importamos path para manejar rutas de carpetas
 const { initDB } = require('./infraestructura/persistencia/initDB');
 const { configurar } = require('./contenedor');
@@ -17,6 +18,17 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
+
+// Aplicación React (carpeta frontend-react). Se compila con npm run build y queda en
+// frontend-react/dist. Si ya está compilada, la raíz del sitio lleva a ella.
+const RUTA_APP_REACT = path.join(__dirname, '../frontend-react/dist');
+app.use('/app', express.static(RUTA_APP_REACT));
+app.get('/', (req, res, next) => {
+    if (fs.existsSync(path.join(RUTA_APP_REACT, 'index.html'))) {
+        return res.redirect('/app/');
+    }
+    next();
+});
 
 // 2. Servir los archivos estáticos de la carpeta 'frontend' que está en la raíz
 app.use(express.static(path.join(__dirname, '../frontend')));
