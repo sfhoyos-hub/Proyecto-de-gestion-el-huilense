@@ -20,9 +20,8 @@
   const CONFIG = {
     API_BASE_URL: BASE_URL,
     PAGINA_LOGIN: RAIZ + 'index.html',
-    PAGINA_PANEL: RAIZ + 'dashboard.html',          // ADMIN
+    PAGINA_PANEL: RAIZ + 'admin/dashboard.html',        // ADMIN
     PAGINA_MESERO: RAIZ + 'mesero/ranking.html',    // MESERO
-    PANEL_DISPONIBLE: true,
     TIMEOUT_MS: 15000
   };
 
