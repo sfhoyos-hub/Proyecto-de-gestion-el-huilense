@@ -5,14 +5,16 @@
 const { registrar } = require('./dominio/puertos/registro');
 const IRepositorio = require('./dominio/puertos/IRepositorio');
 const IAuditoria = require('./dominio/puertos/IAuditoria');
+const IPasarelaPago = require('./dominio/puertos/IPasarelaPago');
 const { auditoria } = require('./infraestructura/auditoria/registroAuditoria');
+const { NequiAdapter } = require('./infraestructura/nequi/NequiAdapter');
 const { EntregaNotificaciones } = require('./infraestructura/notificaciones/EntregaNotificaciones');
 const gestorNotificaciones = require('./negocio/notificaciones/GestorNotificaciones');
 
 // Paquete Persistencia: un repositorio por agregado.
 const REPOSITORIOS = [
     'login', 'meseros', 'domingos', 'temporadas', 'ventas', 'ranking', 'racha',
-    'bonificaciones', 'convocatorias', 'notificaciones'
+    'bonificaciones', 'convocatorias', 'pagos', 'notificaciones'
 ];
 
 let configurado = false;
@@ -29,6 +31,7 @@ function configurar() {
     }
 
     registrar('auditoria', auditoria, IAuditoria);
+    registrar('pasarelaPago', NequiAdapter.desdeEntorno(process.env), IPasarelaPago);
 
     // Observer: la entrega de notificaciones se suscribe al gestor.
     gestorNotificaciones.suscribir(
