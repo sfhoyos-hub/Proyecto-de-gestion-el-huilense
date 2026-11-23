@@ -4,6 +4,7 @@ import Boton from '../ui/Boton';
 import Campo from '../ui/Campo';
 import Modal from '../ui/Modal';
 import useAlertas from '../../hooks/useAlertas';
+import useConvocatoria from '../../hooks/useConvocatoria';
 import useFormulario from '../../hooks/useFormulario';
 import { reglas } from '../../utils/validaciones';
 import { formatearFechaLarga, formatearPesos, nombreCompleto } from '../../utils/formato';
@@ -11,6 +12,7 @@ import { formatearFechaLarga, formatearPesos, nombreCompleto } from '../../utils
 const VACIO = { fecha: '', mesero_id: '', total_vendido: '' };
 
 // Formulario reutilizable para registrar o editar una venta.
+// En "Mesero" solo aparecen los meseros convocados al domingo elegido.
 // Props: abierto, venta (solo al editar), domingos (abiertos), meseros (activos),
 // fechaInicial, onGuardar(datos) -> promesa con { mensaje }, onCerrar.
 export default function FormularioVenta({ abierto, venta, domingos, meseros, fechaInicial, onGuardar, onCerrar }) {
@@ -23,7 +25,10 @@ export default function FormularioVenta({ abierto, venta, domingos, meseros, fec
     mesero_id: [reglas.seleccion('El mesero')],
     total_vendido: [reglas.montoValido('El total vendido')]
   }), []);
-  const { valores, errores, cambiar, validar, reiniciar } = useFormulario(VACIO, reglasVenta);
+  const { valores, errores, cambiar, asignar, validar, reiniciar } = useFormulario(VACIO, reglasVenta);
+
+  const domingoElegido = domingos.find((d) => d.fecha === valores.fecha);
+  const { convocados, tieneConvocatoria, cargando: cargandoConvocatoria } = useConvocatoria(abierto ? domingoElegido?.id ?? null : null);
 
   useEffect(() => {
     if (!abierto) return;
@@ -33,11 +38,26 @@ export default function FormularioVenta({ abierto, venta, domingos, meseros, fec
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [abierto, venta]);
 
+  // Si el domingo tiene convocatoria, solo se ofrecen los meseros convocados.
   // Al editar se muestra también el mesero de la venta aunque ya no esté activo.
   const opcionesMeseros = useMemo(() => {
-    if (!venta || meseros.some((m) => m.id === venta.mesero_id)) return meseros;
-    return [{ id: venta.mesero_id, nombre: venta.nombre, apellido: venta.apellido, identificacion: venta.identificacion }, ...meseros];
-  }, [meseros, venta]);
+    const idsConvocados = new Set(convocados.map((c) => c.mesero_id));
+    const lista = tieneConvocatoria ? meseros.filter((m) => idsConvocados.has(m.id)) : meseros;
+    if (!venta || lista.some((m) => m.id === venta.mesero_id)) return lista;
+    return [{ id: venta.mesero_id, nombre: venta.nombre, apellido: venta.apellido, identificacion: venta.identificacion }, ...lista];
+  }, [meseros, venta, convocados, tieneConvocatoria]);
+
+  // Si al cambiar de domingo el mesero elegido ya no está en la lista, se limpia.
+  useEffect(() => {
+    if (cargandoConvocatoria || !valores.mesero_id) return;
+    if (!opcionesMeseros.some((m) => String(m.id) === String(valores.mesero_id))) asignar('mesero_id', '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opcionesMeseros, cargandoConvocatoria]);
+
+  let ayudaMesero = 'Elige primero el domingo.';
+  if (cargandoConvocatoria) ayudaMesero = 'Cargando los meseros convocados…';
+  else if (domingoElegido && tieneConvocatoria) ayudaMesero = `Solo aparecen los ${opcionesMeseros.length} meseros convocados para este domingo.`;
+  else if (domingoElegido) ayudaMesero = 'Este domingo no tiene meseros convocados: se muestran todos los activos. Puedes convocarlos en Domingos → Ver meseros.';
 
   const guardar = async (evento) => {
     evento.preventDefault();
@@ -76,8 +96,9 @@ export default function FormularioVenta({ abierto, venta, domingos, meseros, fec
           <option value="">Selecciona un domingo…</option>
           {domingos.map((d) => <option key={d.id} value={d.fecha}>{formatearFechaLarga(d.fecha)}</option>)}
         </Campo>
-        <Campo como="select" etiqueta="Mesero" name="mesero_id" value={valores.mesero_id} onChange={cambiar} error={errores.mesero_id}>
-          <option value="">Selecciona un mesero…</option>
+        <Campo como="select" etiqueta="Mesero" name="mesero_id" value={valores.mesero_id} onChange={cambiar} error={errores.mesero_id}
+          disabled={cargandoConvocatoria} ayuda={ayudaMesero}>
+          <option value="">{opcionesMeseros.length === 0 ? 'No hay meseros convocados disponibles' : 'Selecciona un mesero…'}</option>
           {opcionesMeseros.map((m) => (
             <option key={m.id} value={m.id}>{nombreCompleto(m)}{m.identificacion ? ` · ${m.identificacion}` : ''}</option>
           ))}

@@ -87,7 +87,7 @@ export default function VentasPage() {
         <TarjetaKpi titulo="Ventas registradas" valor={ventas.length} icono={Receipt} />
         <TarjetaKpi titulo="Total vendido" valor={formatearPesos(total)} icono={Wallet} />
         <TarjetaKpi titulo="Estado del domingo" valor={domingoActual ? (estaCerrado ? 'Cerrado' : 'Abierto') : '—'}
-          detalle={domingoActual ? `${domingoActual.meseros_requeridos} meseros requeridos` : 'Sin domingo seleccionado'} icono={CalendarDays} />
+          detalle={domingoActual ? `${Number(domingoActual.convocados) || 0} de ${domingoActual.meseros_requeridos} meseros convocados` : 'Sin domingo seleccionado'} icono={CalendarDays} />
       </div>
 
       <div className="mb-4 flex flex-wrap items-end gap-3">
