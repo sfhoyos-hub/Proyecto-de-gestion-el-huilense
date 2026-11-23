@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { CalendarDays, Eye, EyeOff, LockKeyhole, Mail, Receipt, Trophy, UtensilsCrossed } from 'lucide-react';
+import { CalendarDays, Eye, EyeOff, LockKeyhole, Mail, MessageSquareText, Receipt, Trophy, UtensilsCrossed } from 'lucide-react';
 import Boton from '../components/ui/Boton';
 import Campo from '../components/ui/Campo';
 import { PAGINA_MESERO } from '../components/layout/RutaProtegida';
@@ -116,6 +116,12 @@ export default function LoginPage() {
           <p className="mt-4 text-center text-xs text-slate-500">
             ¿Olvidaste tu contraseña? Consulta a la persona responsable del sistema.
           </p>
+          {/* RF-17: el buzón de sugerencias es público y no pide iniciar sesión. */}
+          <a href="/portal-sugerencias/"
+            className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-borde px-4 py-2.5 text-sm font-semibold text-huilense-700 transition hover:border-huilense-600 hover:bg-huilense-50">
+            <MessageSquareText className="size-4" aria-hidden="true" />
+            ¿Tienes una sugerencia? Escríbenos aquí
+          </a>
         </form>
       </section>
     </div>
