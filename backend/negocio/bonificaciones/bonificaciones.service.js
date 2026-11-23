@@ -6,6 +6,7 @@ const { AppError } = require('../../utils/errores');
 const { esFechaValida, obtenerMontoValido } = require('../../utils/validaciones');
 const { ESTADO_BONIFICACION } = require('../../utils/estados');
 const auditoria = puerto('auditoria');
+const notificaciones = require('../notificaciones/GestorNotificaciones');
 
 const MONTO_POR_DEFECTO = 10000;
 const MSG_FORMATO = 'La fecha debe tener el formato YYYY-MM-DD.';
@@ -138,6 +139,14 @@ function auditarMonto(usuario, bonificacion) {
     });
 }
 
+// Observer: el mesero se entera de su bonificación.
+function avisarBonificacion(bonificacion) {
+    return notificaciones.notificarA([bonificacion.mesero_id],
+        notificaciones.TIPO.BONIFICACION,
+        () => `Recibiste una bonificación de $${bonificacion.monto.toLocaleString('es-CO')} ` +
+            `por quedar en el puesto #${bonificacion.posicion}.`);
+}
+
 // Todas las bonificaciones (y su auditoría) se guardan juntas o ninguna.
 function insertarBonificaciones(pendientes, datos, usuario) {
     return repo.enTransaccion(async () => {
@@ -147,6 +156,7 @@ function insertarBonificaciones(pendientes, datos, usuario) {
             const generada = await insertarUna(fila, datos);
 
             await auditarMonto(usuario, generada);
+            await avisarBonificacion(generada);
             generadas.push(generada);
         }
 
