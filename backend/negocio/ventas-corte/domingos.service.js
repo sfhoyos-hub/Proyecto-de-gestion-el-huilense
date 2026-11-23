@@ -3,6 +3,7 @@ const { puerto } = require('../../dominio/puertos/registro');
 const repo = puerto('repositorio.domingos');
 const rankingService = require('../ranking-rachas/ranking.service');
 const rachaService = require('../ranking-rachas/racha.service');
+const notificaciones = require('../notificaciones/GestorNotificaciones');
 const { AppError } = require('../../utils/errores');
 const { esFechaValida, esDomingo } = require('../../utils/validaciones');
 
@@ -110,6 +111,18 @@ async function obtenerVentasParaCierre(domingoId) {
     return ventas;
 }
 
+// Observer: cada mesero recibe su puesto (dentro de la misma transacción).
+function avisarPuestos(posiciones) {
+    const puestos = new Map(posiciones.map((fila) => [fila.mesero_id, fila]));
+
+    return notificaciones.notificarA([...puestos.keys()], notificaciones.TIPO.RANKING,
+        (meseroId) => {
+            const { posicion, top6 } = puestos.get(meseroId);
+            return `Se publicó el ranking del domingo: quedaste en el puesto #${posicion}` +
+                (top6 === 1 ? ' (Top 6).' : '.');
+        });
+}
+
 // Ranking, rachas y cierre ocurren en UNA sola transacción: si algo falla,
 // no se guarda nada (el ranking solo se genera aquí, nunca por separado).
 async function ejecutarCierre(domingoId) {
@@ -122,6 +135,7 @@ async function ejecutarCierre(domingoId) {
     await rankingService.guardarRanking(domingoId, posiciones);
     await rachaService.actualizarRachas(top6, resto);
     await repo.marcarCerrado(domingoId, new Date().toISOString());
+    await avisarPuestos(posiciones);
 
     return top6;
 }
