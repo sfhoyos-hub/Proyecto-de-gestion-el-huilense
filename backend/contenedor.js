@@ -11,7 +11,7 @@ const gestorNotificaciones = require('./negocio/notificaciones/GestorNotificacio
 
 // Paquete Persistencia: un repositorio por agregado.
 const REPOSITORIOS = [
-    'login', 'meseros', 'domingos', 'ventas', 'ranking', 'racha',
+    'login', 'meseros', 'domingos', 'temporadas', 'ventas', 'ranking', 'racha',
     'bonificaciones', 'notificaciones'
 ];
 
