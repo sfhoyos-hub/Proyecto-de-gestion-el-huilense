@@ -6,11 +6,13 @@ const { registrar } = require('./dominio/puertos/registro');
 const IRepositorio = require('./dominio/puertos/IRepositorio');
 const IAuditoria = require('./dominio/puertos/IAuditoria');
 const { auditoria } = require('./infraestructura/auditoria/registroAuditoria');
+const { EntregaNotificaciones } = require('./infraestructura/notificaciones/EntregaNotificaciones');
+const gestorNotificaciones = require('./negocio/notificaciones/GestorNotificaciones');
 
 // Paquete Persistencia: un repositorio por agregado.
 const REPOSITORIOS = [
     'login', 'meseros', 'domingos', 'ventas', 'ranking', 'racha',
-    'bonificaciones'
+    'bonificaciones', 'notificaciones'
 ];
 
 let configurado = false;
@@ -27,6 +29,11 @@ function configurar() {
     }
 
     registrar('auditoria', auditoria, IAuditoria);
+
+    // Observer: la entrega de notificaciones se suscribe al gestor.
+    gestorNotificaciones.suscribir(
+        new EntregaNotificaciones(require('./infraestructura/persistencia/repositorios/notificaciones.repository'))
+    );
 
     configurado = true;
 }
