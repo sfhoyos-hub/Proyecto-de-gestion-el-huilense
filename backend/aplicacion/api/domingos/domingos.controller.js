@@ -2,11 +2,15 @@
 const service = require('../../../negocio/ventas-corte/domingos.service');
 
 async function registrar(req, res) {
-    const domingo = await service.registrar(req.body);
+    const { domingo, convocatoria, aviso } = await service.registrar(req.body);
 
     res.status(201).json({
-        mensaje: 'Domingo registrado correctamente.',
-        domingo
+        mensaje: convocatoria
+            ? 'Domingo registrado y meseros convocados automáticamente.'
+            : 'Domingo registrado correctamente.',
+        domingo,
+        convocatoria,
+        aviso
     });
 }
 

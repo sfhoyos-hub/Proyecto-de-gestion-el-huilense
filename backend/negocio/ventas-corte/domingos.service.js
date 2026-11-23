@@ -4,6 +4,7 @@ const repo = puerto('repositorio.domingos');
 const rankingService = require('../ranking-rachas/ranking.service');
 const rachaService = require('../ranking-rachas/racha.service');
 const notificaciones = require('../notificaciones/GestorNotificaciones');
+const convocatoriaService = require('../convocatoria/convocatoria.service');
 const { AppError } = require('../../utils/errores');
 const { esFechaValida, esDomingo } = require('../../utils/validaciones');
 
@@ -61,15 +62,36 @@ async function verificarFechaLibre(fecha) {
     }
 }
 
+// Convoca a los meseros apenas se registra el domingo. Si no hay meseros
+// activos, el domingo queda registrado igual y se devuelve un aviso.
+async function convocarAutomaticamente(domingoId, estrategia) {
+    try {
+        const convocatoria = await convocatoriaService.generar({
+            domingo_id: domingoId, estrategia: estrategia.nombre
+        });
+
+        return { convocatoria, aviso: null };
+    } catch (error) {
+        if (error instanceof AppError && error.status === 409) {
+            return { convocatoria: null, aviso: error.message };
+        }
+
+        throw error;
+    }
+}
+
 async function registrar(body) {
     const { fecha, temporadaId, cantidad } = validarDatosDomingo(body);
+    const estrategia = convocatoriaService.elegirEstrategia(body.estrategia || undefined);
 
     await verificarTemporada(temporadaId);
     await verificarFechaLibre(fecha);
 
     const resultado = await repo.insertar(fecha, temporadaId || null, cantidad);
+    const domingo = await repo.buscarPorId(resultado.lastID);
+    const { convocatoria, aviso } = await convocarAutomaticamente(domingo.id, estrategia);
 
-    return repo.buscarPorId(resultado.lastID);
+    return { domingo, convocatoria, aviso };
 }
 
 function listar() {

@@ -57,6 +57,17 @@ async function obtenerDomingoAbierto(domingoId) {
     return domingo;
 }
 
+// Si ya hay ventas, rehacer la convocatoria podría dejar por fuera a un
+// mesero que ya vendió ese domingo.
+async function verificarSinVentas(domingoId) {
+    const { total } = await repo.contarVentasDelDomingo(domingoId);
+
+    if (total > 0) {
+        throw new AppError(409,
+            'El domingo ya tiene ventas registradas; no se puede rehacer la convocatoria.');
+    }
+}
+
 async function obtenerCandidatos(domingo) {
     const filas = await repo.listarMeserosActivosConRendimiento(
         domingo.fecha, DOMINGOS_RECIENTES
@@ -97,6 +108,9 @@ async function generar(body = {}) {
     const domingoId = validarDomingoId(body.domingo_id);
     const estrategia = elegirEstrategia(body.estrategia);
     const domingo = await obtenerDomingoAbierto(domingoId);
+
+    await verificarSinVentas(domingoId);
+
     const candidatos = await obtenerCandidatos(domingo);
     const convocatoria = Convocatoria.crear(
         domingo, estrategia.nombre, estrategia.ordenar(candidatos, domingo.fecha)
@@ -130,4 +144,4 @@ function misConvocatorias(usuario) {
     return repo.listarPorMesero(usuario.mesero_id);
 }
 
-module.exports = { generar, consultar, misConvocatorias, ESTRATEGIAS };
+module.exports = { generar, consultar, misConvocatorias, elegirEstrategia, ESTRATEGIAS };

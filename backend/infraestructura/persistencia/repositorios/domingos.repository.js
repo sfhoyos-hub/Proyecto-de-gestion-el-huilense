@@ -13,7 +13,9 @@ function insertar(fecha, temporadaId, cantidad) {
 function listar() {
     return getDB().all(`
         SELECT d.id, d.fecha, d.temporada_id, t.nombre AS temporada,
-               d.meseros_requeridos, d.cerrado, d.fecha_cierre
+               d.meseros_requeridos, d.cerrado, d.fecha_cierre,
+               (SELECT COUNT(*) FROM convocatorias c
+                WHERE c.domingo_id = d.id AND c.estado = 'convocado') AS convocados
         FROM domingos d
         LEFT JOIN temporadas t ON t.id = d.temporada_id
         ORDER BY d.fecha DESC
