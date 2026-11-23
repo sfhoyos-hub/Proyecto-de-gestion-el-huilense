@@ -1,0 +1,67 @@
+/* El Huilense · Portal público de sugerencias */
+:root {
+  --primario: #8B0000;
+  --secundario: #D97706;
+  --fondo: #F7F5F0;
+  --texto: #1F2937;
+  --suave: #6B7280;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  padding: 1rem;
+}
+
+.portal {
+  width: min(560px, 100%);
+  background: #FFFFFF;
+  border-top: 6px solid var(--primario);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+}
+
+.marca { color: var(--secundario); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin: 0; }
+h1 { color: var(--primario); margin: 0.25rem 0 0.5rem; }
+header p:last-child { color: var(--suave); }
+
+label { display: block; font-weight: 700; margin: 1.25rem 0 0.5rem; }
+
+textarea {
+  width: 100%;
+  font: inherit;
+  padding: 0.75rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  resize: vertical;
+}
+
+textarea:focus-visible { outline: 2px solid var(--secundario); outline-offset: 1px; }
+
+.contador { text-align: right; color: var(--suave); font-size: 0.85rem; margin: 0.25rem 0 1rem; }
+
+button {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: var(--primario);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:disabled { opacity: 0.6; cursor: wait; }
+button:focus-visible { outline: 3px solid var(--secundario); outline-offset: 2px; }
+
+.volver { text-align: center; margin-top: 1.5rem; }
+.volver a { color: var(--primario); }
