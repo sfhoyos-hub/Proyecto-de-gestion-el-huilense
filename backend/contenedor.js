@@ -15,7 +15,7 @@ const gestorNotificaciones = require('./negocio/notificaciones/GestorNotificacio
 const REPOSITORIOS = [
     'login', 'meseros', 'domingos', 'temporadas', 'ventas', 'ranking', 'racha',
     'bonificaciones', 'convocatorias', 'pagos', 'notificaciones',
-    'sugerencias'
+    'sugerencias', 'reportes'
 ];
 
 let configurado = false;
