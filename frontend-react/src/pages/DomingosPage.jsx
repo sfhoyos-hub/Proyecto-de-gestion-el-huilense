@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { CalendarCheck, CalendarDays, CalendarPlus, Lock, LockOpen } from 'lucide-react';
+import { CalendarCheck, CalendarDays, CalendarPlus, Lock, LockOpen, Users } from 'lucide-react';
+import ConvocatoriaDomingo from '../components/domingos/ConvocatoriaDomingo';
 import FormularioDomingo from '../components/domingos/FormularioDomingo';
 import Boton from '../components/ui/Boton';
 import EncabezadoPagina from '../components/ui/EncabezadoPagina';
@@ -12,10 +13,11 @@ import useMeseros from '../hooks/useMeseros';
 import { formatearFechaLarga, nombreCompleto } from '../utils/formato';
 
 export default function DomingosPage() {
-  const { domingos, abiertos, cargando, error: errorCarga, registrar, cerrarCorte } = useDomingos();
+  const { domingos, abiertos, cargando, error: errorCarga, recargar, registrar, cerrarCorte } = useDomingos();
   const { meseros } = useMeseros();
   const { exito, error, confirmar } = useAlertas();
   const [formularioAbierto, setFormularioAbierto] = useState(false);
+  const [domingoConvocatoria, setDomingoConvocatoria] = useState(null);
 
   const nombres = useMemo(() => new Map(meseros.map((m) => [m.id, nombreCompleto(m)])), [meseros]);
 
@@ -41,17 +43,29 @@ export default function DomingosPage() {
     { titulo: 'ID', render: (d) => <span className="font-semibold text-slate-500">#{d.id}</span> },
     { titulo: 'Fecha', render: (d) => <span className="font-semibold capitalize text-huilense-700">{formatearFechaLarga(d.fecha)}</span> },
     { titulo: 'Meseros requeridos', campo: 'meseros_requeridos' },
+    {
+      titulo: 'Convocados', render: (d) => {
+        const convocados = Number(d.convocados) || 0;
+        if (convocados === 0) return <Insignia>Sin convocar</Insignia>;
+        return <Insignia tono={convocados >= d.meseros_requeridos ? 'exito' : 'marca'}>{convocados} de {d.meseros_requeridos}</Insignia>;
+      }
+    },
     { titulo: 'Estado', render: (d) => (Number(d.cerrado) === 1 ? <Insignia>Cerrado</Insignia> : <Insignia tono="exito">Abierto</Insignia>) },
     {
-      titulo: 'Acción', alinear: 'right', render: (d) => (Number(d.cerrado) === 1
-        ? <span className="text-xs text-slate-400">Corte cerrado</span>
-        : <Boton tamano="sm" variante="secundario" icono={Lock} onClick={() => cerrar(d)}>Cerrar corte</Boton>)
+      titulo: 'Acción', alinear: 'right', render: (d) => (
+        <div className="flex justify-end gap-2">
+          <Boton tamano="sm" variante="secundario" icono={Users} onClick={() => setDomingoConvocatoria(d)}>Ver meseros</Boton>
+          {Number(d.cerrado) === 1
+            ? <span className="self-center text-xs text-slate-400">Corte cerrado</span>
+            : <Boton tamano="sm" variante="secundario" icono={Lock} onClick={() => cerrar(d)}>Cerrar corte</Boton>}
+        </div>
+      )
     }
   ];
 
   return (
     <>
-      <EncabezadoPagina titulo="Domingos" descripcion="Programa las jornadas dominicales y cierra el corte para calcular el Top 6."
+      <EncabezadoPagina titulo="Domingos" descripcion="Programa las jornadas dominicales, revisa qué meseros quedaron convocados y cierra el corte para calcular el Top 6."
         acciones={<Boton icono={CalendarPlus} onClick={() => setFormularioAbierto(true)}>Registrar domingo</Boton>} />
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -64,6 +78,7 @@ export default function DomingosPage() {
         mensajeVacio={errorCarga ? `No se pudo cargar la lista: ${errorCarga.message}` : 'Aún no hay domingos registrados.'} />
 
       <FormularioDomingo abierto={formularioAbierto} onGuardar={registrar} onCerrar={() => setFormularioAbierto(false)} />
+      <ConvocatoriaDomingo domingo={domingoConvocatoria} onCambio={recargar} onCerrar={() => setDomingoConvocatoria(null)} />
     </>
   );
 }
