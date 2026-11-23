@@ -23,9 +23,29 @@ app.use(cors());
 // frontend-react/dist. Si ya está compilada, la raíz del sitio lleva a ella.
 const RUTA_APP_REACT = path.join(__dirname, '../frontend-react/dist');
 app.use('/app', express.static(RUTA_APP_REACT));
+const reactCompilado = () => fs.existsSync(path.join(RUTA_APP_REACT, 'index.html'));
+
 app.get('/', (req, res, next) => {
-    if (fs.existsSync(path.join(RUTA_APP_REACT, 'index.html'))) {
+    if (reactCompilado()) {
         return res.redirect('/app/');
+    }
+    next();
+});
+
+// Las pantallas clásicas que ya tienen versión en React llevan a React, así el
+// "Inicio" y el menú del panel clásico no muestran el panel anterior.
+const PANTALLAS_EN_REACT = {
+    'dashboard.html': 'dashboard',
+    'meseros.html': 'meseros',
+    'domingos.html': 'domingos',
+    'ventas.html': 'ventas'
+};
+
+app.get('/admin/:pagina', (req, res, next) => {
+    const ruta = PANTALLAS_EN_REACT[req.params.pagina];
+
+    if (ruta && reactCompilado()) {
+        return res.redirect(`/app/#/${ruta}`);
     }
     next();
 });
