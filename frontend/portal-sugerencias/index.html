@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sugerencias | El Huilense</title>
+  <link rel="stylesheet" href="../css/alertas.css">
+  <link rel="stylesheet" href="../css/portal-sugerencias.css">
+</head>
+<body>
+  <main class="portal">
+    <header>
+      <p class="marca">El Huilense</p>
+      <h1>Buzón de sugerencias</h1>
+      <p>¿Cómo podemos mejorar tu experiencia? Tu mensaje es anónimo.</p>
+    </header>
+
+    <form id="form-sugerencia" novalidate>
+      <label for="contenido">Tu sugerencia</label>
+      <textarea id="contenido" name="contenido" rows="6" minlength="5" maxlength="1000" required
+        aria-describedby="contador"></textarea>
+      <p id="contador" class="contador" aria-live="polite">0 / 1000</p>
+      <button type="submit" id="btn-enviar">Enviar sugerencia</button>
+    </form>
+
+    <p class="volver"><a href="../index.html">Ir al inicio de sesión</a></p>
+  </main>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/ui/alertas.js"></script>
+  <script src="../js/portal-sugerencias.js"></script>
+</body>
+</html>
