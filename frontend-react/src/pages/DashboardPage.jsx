@@ -1,4 +1,4 @@
-import { CalendarCheck, CalendarDays, Coins, Receipt, Trophy, Users, Wallet } from 'lucide-react';
+import { BarChart3, CalendarCheck, CalendarDays, Coins, MessageSquareText, Receipt, Smartphone, Trophy, UserCheck, Users, Wallet } from 'lucide-react';
 import BotonModulo from '../components/ui/BotonModulo';
 import EncabezadoPagina from '../components/ui/EncabezadoPagina';
 import TarjetaKpi from '../components/ui/TarjetaKpi';
@@ -11,7 +11,11 @@ const MODULOS = [
   { a: '/domingos', texto: 'Domingos', descripcion: 'Programar jornadas y cerrar cortes', icono: CalendarDays },
   { a: '/ventas', texto: 'Ventas', descripcion: 'Registrar y corregir ventas', icono: Receipt },
   { href: '/admin/ranking.html', texto: 'Ranking', descripcion: 'Top 6 de cada domingo', icono: Trophy },
-  { href: '/admin/bonificaciones.html', texto: 'Bonificaciones', descripcion: 'Generar y consultar', icono: Coins }
+  { href: '/admin/bonificaciones.html', texto: 'Bonificaciones', descripcion: 'Generar y consultar', icono: Coins },
+  { href: '/admin/convocatoria.html', texto: 'Convocatoria', descripcion: 'Meseros convocados por domingo', icono: UserCheck },
+  { href: '/admin/pagos.html', texto: 'Pagos Nequi', descripcion: 'Pagar bonificaciones', icono: Smartphone },
+  { href: '/admin/reportes.html', texto: 'Reportes', descripcion: 'Desempeño e historial', icono: BarChart3 },
+  { href: '/admin/sugerencias.html', texto: 'Sugerencias', descripcion: 'Buzón de los clientes', icono: MessageSquareText }
 ];
 
 export default function DashboardPage() {
