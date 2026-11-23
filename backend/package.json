@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "crear-admin": "node scripts/crearAdmin.js",
-    "test": "node --test pruebas/arquitectura.test.js"
+    "test": "node --test pruebas/arquitectura.test.js pruebas/ventas-convocatoria.test.js"
   },
   "keywords": [],
   "author": "",

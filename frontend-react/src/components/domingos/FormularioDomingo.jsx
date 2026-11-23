@@ -5,10 +5,11 @@ import Campo from '../ui/Campo';
 import Modal from '../ui/Modal';
 import useAlertas from '../../hooks/useAlertas';
 import useFormulario from '../../hooks/useFormulario';
+import { ESTRATEGIAS } from '../../hooks/useConvocatoria';
 import { esFechaValida, esDomingo, reglas } from '../../utils/validaciones';
-import { formatearFechaLarga } from '../../utils/formato';
+import { formatearFechaLarga, nombreCompleto } from '../../utils/formato';
 
-const VACIO = { fecha: '', meseros_requeridos: '' };
+const VACIO = { fecha: '', meseros_requeridos: '', estrategia: 'rendimiento' };
 
 // Fecha (YYYY-MM-DD) del próximo domingo, o de hoy si hoy es domingo.
 function proximoDomingo() {
@@ -17,7 +18,19 @@ function proximoDomingo() {
   return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
 }
 
+// Arma el mensaje final con los meseros que el sistema convocó.
+function mensajeDeConvocatoria(respuesta) {
+  const convocados = respuesta?.convocatoria?.convocados || [];
+  const descanso = respuesta?.convocatoria?.descanso || [];
+  return [
+    respuesta?.mensaje || 'Domingo registrado correctamente.',
+    ...convocados.map((m, i) => `${i + 1}. ${nombreCompleto(m)}`),
+    ...(descanso.length > 0 ? [`En descanso: ${descanso.length} mesero(s).`] : [])
+  ];
+}
+
 // Formulario para programar un domingo. Si se elige otro día, avisa con una ventana.
+// Al guardar, el sistema convoca a los meseros con el criterio elegido.
 // Props: abierto, onGuardar(datos) -> promesa con { mensaje }, onCerrar.
 export default function FormularioDomingo({ abierto, onGuardar, onCerrar }) {
   const { exito, error, advertencia } = useAlertas();
@@ -57,7 +70,12 @@ export default function FormularioDomingo({ abierto, onGuardar, onCerrar }) {
     try {
       const respuesta = await onGuardar(valores);
       onCerrar();
-      exito(respuesta?.mensaje || 'Domingo registrado correctamente.');
+      if (respuesta?.aviso) {
+        advertencia([respuesta.mensaje || 'Domingo registrado.', respuesta.aviso,
+          'Cuando registres meseros, convócalos desde el botón "Ver meseros".'], { titulo: 'Domingo sin meseros convocados' });
+      } else {
+        exito(mensajeDeConvocatoria(respuesta), { titulo: 'Meseros convocados' });
+      }
     } catch (problema) {
       error(problema);
     } finally {
@@ -86,6 +104,10 @@ export default function FormularioDomingo({ abierto, onGuardar, onCerrar }) {
         <Campo etiqueta="Meseros requeridos" name="meseros_requeridos" type="number" min="1" step="1" inputMode="numeric"
           value={valores.meseros_requeridos} onChange={cambiar} error={errores.meseros_requeridos}
           ayuda="Cantidad de meseros que se necesitan esa jornada." />
+        <Campo como="select" etiqueta="Criterio para convocar" name="estrategia" value={valores.estrategia} onChange={cambiar}
+          ayuda="El sistema elige a los meseros que trabajan ese domingo; el resto queda en descanso.">
+          {ESTRATEGIAS.map((e) => <option key={e.valor} value={e.valor}>{e.texto}</option>)}
+        </Campo>
       </form>
     </Modal>
   );

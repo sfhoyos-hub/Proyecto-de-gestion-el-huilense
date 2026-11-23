@@ -30,6 +30,19 @@ function buscarVentaDuplicada(meseroId, domingoId, excluirId = 0) {
     );
 }
 
+// total: cuántos meseros tiene la convocatoria del domingo (0 = sin convocatoria).
+// convocado: 1 si este mesero está convocado ese domingo.
+function estadoConvocatoria(meseroId, domingoId) {
+    return getDB().get(
+        `SELECT COUNT(*) AS total,
+                COALESCE(SUM(CASE WHEN mesero_id = ? AND estado = 'convocado'
+                                  THEN 1 ELSE 0 END), 0) AS convocado
+         FROM convocatorias
+         WHERE domingo_id = ?`,
+        [meseroId, domingoId]
+    );
+}
+
 function insertar(meseroId, domingoId, monto) {
     return getDB().run(
         `INSERT INTO ventas (mesero_id, domingo_id, total_vendido)
@@ -78,6 +91,7 @@ module.exports = crearRepositorio({
     buscarMeseroPorId,
     buscarVentaConDomingo,
     buscarVentaDuplicada,
+    estadoConvocatoria,
     insertar,
     actualizar,
     buscarResumenPorId,

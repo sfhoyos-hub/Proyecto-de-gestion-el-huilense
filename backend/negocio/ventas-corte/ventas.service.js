@@ -88,6 +88,18 @@ async function obtenerDomingoAbierto(fecha) {
     return domingo;
 }
 
+// RF-10: si el domingo tiene convocatoria, solo los meseros convocados pueden
+// tener ventas. Los domingos sin convocatoria (registrados antes) aceptan a todos.
+async function verificarMeseroConvocado(meseroId, domingoId) {
+    const { total, convocado } = await repo.estadoConvocatoria(meseroId, domingoId);
+
+    if (total > 0 && Number(convocado) === 0) {
+        throw new AppError(409,
+            'El mesero no está convocado para este domingo. ' +
+            'Solo se registran ventas de los meseros convocados.');
+    }
+}
+
 async function verificarVentaDuplicada(meseroId, domingoId, opciones) {
     const { excluirId, mensaje } = opciones;
 
@@ -151,6 +163,7 @@ async function registrarVenta(body, usuario) {
 
     const domingo = await obtenerDomingoAbierto(fecha);
 
+    await verificarMeseroConvocado(meseroId, domingo.id);
     await verificarVentaDuplicada(meseroId, domingo.id, {
         mensaje: 'Ya existe una venta para este mesero en esta fecha. Use PUT para editarla.'
     });
@@ -177,6 +190,11 @@ async function editarVenta(idParam, body, usuario) {
     await verificarMeseroActivo(meseroId);
 
     const domingo = await obtenerDomingoAbierto(fecha);
+
+    // Si solo cambia el monto, el mesero y el domingo ya estaban validados.
+    if (meseroId !== Number(venta.mesero_id) || domingo.id !== Number(venta.domingo_id)) {
+        await verificarMeseroConvocado(meseroId, domingo.id);
+    }
 
     await verificarDuplicadoAlEditar(id, meseroId, domingo.id);
     await actualizarAuditada(venta, { meseroId, domingo, monto }, usuario);

@@ -27,6 +27,13 @@ function listarMeserosActivosConRendimiento(fecha, domingosRecientes) {
     );
 }
 
+function contarVentasDelDomingo(domingoId) {
+    return getDB().get(
+        'SELECT COUNT(*) AS total FROM ventas WHERE domingo_id = ?',
+        [domingoId]
+    );
+}
+
 function eliminarDelDomingo(domingoId) {
     return getDB().run('DELETE FROM convocatorias WHERE domingo_id = ?', [domingoId]);
 }
@@ -40,7 +47,7 @@ function insertar(domingoId, meseroId, estado) {
 
 function listarPorDomingo(domingoId) {
     return getDB().all(
-        `SELECT c.id, c.mesero_id, c.estado, m.nombre, m.apellido
+        `SELECT c.id, c.mesero_id, c.estado, m.nombre, m.apellido, m.identificacion
          FROM convocatorias c
          JOIN meseros m ON m.id = c.mesero_id
          WHERE c.domingo_id = ?
@@ -63,6 +70,7 @@ function listarPorMesero(meseroId) {
 module.exports = crearRepositorio({
     buscarDomingo,
     listarMeserosActivosConRendimiento,
+    contarVentasDelDomingo,
     eliminarDelDomingo,
     insertar,
     listarPorDomingo,
