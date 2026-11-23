@@ -15,7 +15,11 @@
     { pagina: 'domingos', href: 'domingos.html', icono: 'bi-calendar3', texto: 'Domingos y cierre' },
     { pagina: 'ventas', href: 'ventas.html', icono: 'bi-receipt', texto: 'Ventas' },
     { pagina: 'ranking', href: 'ranking.html', icono: 'bi-trophy-fill', texto: 'Ranking' },
-    { pagina: 'bonificaciones', href: 'bonificaciones.html', icono: 'bi-cash-coin', texto: 'Bonificaciones' }
+    { pagina: 'bonificaciones', href: 'bonificaciones.html', icono: 'bi-cash-coin', texto: 'Bonificaciones' },
+    { pagina: 'convocatoria', href: 'convocatoria.html', icono: 'bi-person-check-fill', texto: 'Convocatoria' },
+    { pagina: 'pagos', href: 'pagos.html', icono: 'bi-phone-fill', texto: 'Pagos Nequi' },
+    { pagina: 'reportes', href: 'reportes.html', icono: 'bi-bar-chart-fill', texto: 'Reportes' },
+    { pagina: 'sugerencias', href: 'sugerencias.html', icono: 'bi-chat-left-text-fill', texto: 'Sugerencias' }
   ];
 
   function redirigirALogin(motivo) {
