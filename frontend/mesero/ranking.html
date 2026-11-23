@@ -6,6 +6,7 @@
   <title>El Huilense - Panel Mesero</title>
   <link rel="stylesheet" href="../css/ranking-mesero.css">
   <link rel="stylesheet" href="../css/alertas.css">
+  <link rel="stylesheet" href="../css/mesero-panel.css">
 </head>
 <body>
 
@@ -65,10 +66,48 @@
       </article>
     </section>
 
+    <!-- Notificaciones (Observer) -->
+    <section class="card">
+      <h2>Mis notificaciones <span id="notif-pendientes" class="contador"></span></h2>
+      <ul id="lista-notificaciones" class="lista"></ul>
+    </section>
+
+    <!-- Convocatoria y racha -->
+    <section class="card">
+      <h2>Mis turnos y racha</h2>
+      <p>Racha actual en el Top 6: <strong id="mi-racha">-</strong></p>
+      <table class="tabla">
+        <thead><tr><th>Domingo</th><th>Estado</th></tr></thead>
+        <tbody id="mis-convocatorias"></tbody>
+      </table>
+    </section>
+
+    <!-- Cuenta Nequi -->
+    <section class="card">
+      <h2>Mi cuenta Nequi</h2>
+      <p class="ayuda">Tus bonificaciones se pagan a este número. Actual: <strong id="cuenta-actual">sin registrar</strong></p>
+      <form id="form-mi-cuenta" class="fila-form" novalidate>
+        <label for="mi-numero-nequi">Celular Nequi</label>
+        <input type="tel" id="mi-numero-nequi" inputmode="numeric" maxlength="10" placeholder="3001234567" required>
+        <button type="submit" class="btn-consultar">Guardar</button>
+      </form>
+    </section>
+
+    <!-- Historial -->
+    <section class="card">
+      <h2>Mi historial</h2>
+      <table class="tabla">
+        <thead><tr><th>Fecha</th><th>Vendido</th><th>Puesto</th><th>Bonificación</th></tr></thead>
+        <tbody id="mi-historial"></tbody>
+      </table>
+    </section>
+
   </main>
 
   <script src="../js/api.js"></script>
   <script src="../js/ui/alertas.js"></script>
+  <script src="../js/ui/dom.js"></script>
   <script src="../js/mesero-ranking.js"></script>
+  <script src="../js/mesero-panel.js"></script>
 </body>
-</html>
+</html>
