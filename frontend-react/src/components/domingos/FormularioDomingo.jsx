@@ -7,7 +7,7 @@ import useAlertas from '../../hooks/useAlertas';
 import useFormulario from '../../hooks/useFormulario';
 import { ESTRATEGIAS } from '../../hooks/useConvocatoria';
 import { esFechaValida, esDomingo, reglas } from '../../utils/validaciones';
-import { formatearFechaLarga, nombreCompleto } from '../../utils/formato';
+import { datoDelCriterio, formatearFechaLarga, nombreCompleto } from '../../utils/formato';
 
 const VACIO = { fecha: '', meseros_requeridos: '', estrategia: 'rendimiento' };
 
@@ -20,12 +20,16 @@ function proximoDomingo() {
 
 // Arma el mensaje final con los meseros que el sistema convocó.
 function mensajeDeConvocatoria(respuesta) {
-  const convocados = respuesta?.convocatoria?.convocados || [];
-  const descanso = respuesta?.convocatoria?.descanso || [];
+  const convocatoria = respuesta?.convocatoria || {};
+  const convocados = convocatoria.convocados || [];
+  const descanso = convocatoria.descanso || [];
+  const criterio = convocatoria.estrategia === 'antiguedad' ? 'antigüedad' : 'rendimiento';
   return [
     respuesta?.mensaje || 'Domingo registrado correctamente.',
-    ...convocados.map((m, i) => `${i + 1}. ${nombreCompleto(m)}`),
-    ...(descanso.length > 0 ? [`En descanso: ${descanso.length} mesero(s).`] : [])
+    `Criterio: ${criterio}.`,
+    ...convocados.map((m, i) => `${i + 1}. ${nombreCompleto(m)}: ${datoDelCriterio(m, convocatoria.estrategia)}`),
+    ...(descanso.length > 0 ? [`En descanso: ${descanso.length} mesero(s).`] : []),
+    ...(convocatoria.nota ? [convocatoria.nota] : [])
   ];
 }
 

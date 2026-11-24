@@ -27,6 +27,30 @@ function listarMeserosActivosConRendimiento(fecha, domingosRecientes) {
     );
 }
 
+// Lo vendido por cada mesero en los últimos domingos cerrados antes de la fecha.
+function ventasRecientesPorMesero(fecha, domingosRecientes) {
+    return getDB().all(
+        `SELECT mesero_id, SUM(total_vendido) AS total
+         FROM ventas
+         WHERE domingo_id IN (
+             SELECT id FROM domingos
+             WHERE cerrado = 1 AND fecha < ?
+             ORDER BY fecha DESC LIMIT ?)
+         GROUP BY mesero_id`,
+        [fecha, domingosRecientes]
+    );
+}
+
+function contarDomingosCerradosAntes(fecha, domingosRecientes) {
+    return getDB().get(
+        `SELECT COUNT(*) AS total FROM (
+             SELECT id FROM domingos
+             WHERE cerrado = 1 AND fecha < ?
+             ORDER BY fecha DESC LIMIT ?)`,
+        [fecha, domingosRecientes]
+    );
+}
+
 function contarVentasDelDomingo(domingoId) {
     return getDB().get(
         'SELECT COUNT(*) AS total FROM ventas WHERE domingo_id = ?',
@@ -38,16 +62,17 @@ function eliminarDelDomingo(domingoId) {
     return getDB().run('DELETE FROM convocatorias WHERE domingo_id = ?', [domingoId]);
 }
 
-function insertar(domingoId, meseroId, estado) {
+function insertar(domingoId, meseroId, estado, estrategia) {
     return getDB().run(
-        'INSERT INTO convocatorias (domingo_id, mesero_id, estado) VALUES (?, ?, ?)',
-        [domingoId, meseroId, estado]
+        'INSERT INTO convocatorias (domingo_id, mesero_id, estado, estrategia) VALUES (?, ?, ?, ?)',
+        [domingoId, meseroId, estado, estrategia]
     );
 }
 
 function listarPorDomingo(domingoId) {
     return getDB().all(
-        `SELECT c.id, c.mesero_id, c.estado, m.nombre, m.apellido, m.identificacion
+        `SELECT c.id, c.mesero_id, c.estado, c.estrategia,
+                m.nombre, m.apellido, m.identificacion, m.fecha_ingreso
          FROM convocatorias c
          JOIN meseros m ON m.id = c.mesero_id
          WHERE c.domingo_id = ?
@@ -70,6 +95,8 @@ function listarPorMesero(meseroId) {
 module.exports = crearRepositorio({
     buscarDomingo,
     listarMeserosActivosConRendimiento,
+    ventasRecientesPorMesero,
+    contarDomingosCerradosAntes,
     contarVentasDelDomingo,
     eliminarDelDomingo,
     insertar,
