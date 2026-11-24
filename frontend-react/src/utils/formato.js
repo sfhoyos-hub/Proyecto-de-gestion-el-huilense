@@ -21,3 +21,9 @@ export function formatearFechaCorta(fecha) {
   if (!fecha) return '—';
   return new Date(`${fecha}T12:00:00`).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }).replace('.', '');
 }
+
+// Dato que explica la posición de un mesero en la convocatoria, según el criterio.
+export function datoDelCriterio(mesero, estrategia) {
+  if (estrategia === 'antiguedad') return `Ingresó el ${formatearFechaCorta(mesero.fecha_ingreso)}`;
+  return `${formatearPesos(mesero.total_reciente)} en domingos recientes`;
+}

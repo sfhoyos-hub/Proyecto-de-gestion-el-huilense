@@ -60,6 +60,9 @@ export default function useConvocatoria(domingoId) {
   return {
     convocados,
     descanso,
+    estrategia: convocatoria?.estrategia || null,
+    domingosConsiderados: convocatoria?.domingos_considerados ?? 0,
+    nota: convocatoria?.nota || null,
     tieneConvocatoria: convocados.length + descanso.length > 0,
     cargando,
     error,
