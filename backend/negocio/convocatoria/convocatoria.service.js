@@ -83,6 +83,29 @@ async function obtenerCandidatos(domingo) {
     }));
 }
 
+// Si nadie tiene ventas en los domingos cerrados recientes, todos empatan en
+// rendimiento y el orden lo define el desempate por antigüedad.
+const NOTA_SIN_VENTAS = 'Todavía no hay ventas en domingos cerrados anteriores, ' +
+    'así que todos los meseros empatan en rendimiento y quedaron ordenados por antigüedad.';
+
+function notaDelCriterio(estrategia, totales) {
+    const hayVentas = [...totales].some((total) => Number(total) > 0);
+
+    return estrategia === 'rendimiento' && !hayVentas ? NOTA_SIN_VENTAS : null;
+}
+
+async function datosDeRendimiento(fecha) {
+    const [ventas, { total }] = await Promise.all([
+        repo.ventasRecientesPorMesero(fecha, DOMINGOS_RECIENTES),
+        repo.contarDomingosCerradosAntes(fecha, DOMINGOS_RECIENTES)
+    ]);
+
+    return {
+        totales: new Map(ventas.map((v) => [v.mesero_id, Number(v.total) || 0])),
+        domingosConsiderados: total
+    };
+}
+
 // ---------- Operaciones ----------
 
 // Reemplaza la convocatoria anterior del domingo (si la había) y avisa a los convocados.
@@ -93,7 +116,8 @@ function guardar(convocatoria) {
         await repo.eliminarDelDomingo(domingo.id);
 
         for (const detalle of convocatoria.detalles) {
-            await repo.insertar(domingo.id, detalle.mesero.meseroId, detalle.estado);
+            await repo.insertar(domingo.id, detalle.mesero.meseroId, detalle.estado,
+                convocatoria.estrategia);
         }
 
         await notificaciones.notificarA(
@@ -112,9 +136,16 @@ async function generar(body = {}) {
     await verificarSinVentas(domingoId);
 
     const candidatos = await obtenerCandidatos(domingo);
-    const convocatoria = Convocatoria.crear(
-        domingo, estrategia.nombre, estrategia.ordenar(candidatos, domingo.fecha)
+    const totales = new Map(candidatos.map((c) => [c.mesero.meseroId, Number(c.totalReciente) || 0]));
+    const { total: domingosConsiderados } = await repo.contarDomingosCerradosAntes(
+        domingo.fecha, DOMINGOS_RECIENTES
     );
+    const convocatoria = Convocatoria.crear(
+        domingo, estrategia.nombre, estrategia.ordenar(candidatos, domingo.fecha), totales
+    );
+
+    convocatoria.domingosConsiderados = domingosConsiderados;
+    convocatoria.nota = notaDelCriterio(estrategia.nombre, totales.values());
 
     await guardar(convocatoria);
 
@@ -129,14 +160,24 @@ async function consultar(domingoIdParam) {
         throw new AppError(404, 'El domingo indicado no existe.');
     }
 
-    const filas = await repo.listarPorDomingo(domingoId);
+    const [filas, { totales, domingosConsiderados }] = await Promise.all([
+        repo.listarPorDomingo(domingoId),
+        datosDeRendimiento(fila.fecha)
+    ]);
+    const meseros = filas.map((f, indice) => ({
+        ...f, orden: indice + 1, total_reciente: totales.get(f.mesero_id) || 0
+    }));
+    const estrategia = filas[0]?.estrategia || null;
 
     return {
         domingo_id: fila.id,
         fecha: fila.fecha,
         meseros_requeridos: fila.meseros_requeridos,
-        convocados: filas.filter((f) => f.estado === 'convocado'),
-        descanso: filas.filter((f) => f.estado === 'descanso')
+        estrategia,
+        domingos_considerados: domingosConsiderados,
+        nota: notaDelCriterio(estrategia, meseros.map((m) => m.total_reciente)),
+        convocados: meseros.filter((m) => m.estado === 'convocado'),
+        descanso: meseros.filter((m) => m.estado === 'descanso')
     };
 }
 

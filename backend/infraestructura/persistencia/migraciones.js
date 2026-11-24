@@ -70,9 +70,15 @@ async function migrarPasswordsEnTextoPlano(db) {
     }
 }
 
+// Guarda con qué criterio (rendimiento o antigüedad) se armó cada convocatoria.
+function migrarEstrategiaDeConvocatorias(db) {
+    return agregarColumnaSiNoExiste(db, 'convocatorias', 'estrategia', 'TEXT');
+}
+
 async function migrar(db) {
     await migrarEstadosDeUsuarios(db);
     await migrarEstadoDeBonificaciones(db);
+    await migrarEstrategiaDeConvocatorias(db);
     await migrarPasswordsEnTextoPlano(db);
 }
 
